@@ -1,118 +1,135 @@
 'use client'
 
-import { Header } from '@/components/layout/header'
 import { useSettings } from '@/components/theme/settings-provider'
-import { useFont } from '@/components/theme/font-provider'
-import { useTexture, TEXTURES } from '@/components/theme/texture-provider'
 import { useTheme } from 'next-themes'
-import { Minus, Plus, Sun, Moon, Monitor } from 'lucide-react'
+import { Minus, Plus, Sun, Moon, Monitor, CalendarClock, Palette, ListChecks } from '@/components/ui/icons'
+import { PageHeader, PageBody } from '@/components/layout/page-header'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 
-const FONTS = ['space-grotesk', 'geist-sans', 'inter', 'roboto', 'open-sans', 'montserrat', 'lato'] as const
-
-function Row({ label, desc, children }: { label: string; desc?: string; children: React.ReactNode }) {
+function Row({ label, desc, children, className }: { label: string; desc?: string; children: React.ReactNode; className?: string }) {
     return (
-        <div className="flex items-center justify-between gap-4 py-4 border-b border-border/40">
+        <div className={cn('flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0', className)}>
             <div className="min-w-0">
-                <div className="text-sm font-black uppercase tracking-tight">{label}</div>
-                {desc && <div className="text-[11px] font-mono text-muted-foreground uppercase tracking-wide mt-0.5">{desc}</div>}
+                <div className="text-sm font-medium text-foreground">{label}</div>
+                {desc && <div className="mt-0.5 text-[13px] text-muted-foreground">{desc}</div>}
             </div>
             <div className="shrink-0">{children}</div>
         </div>
     )
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-    return (
-        <section>
-            <h2 className="text-lg font-black uppercase tracking-tighter mb-4 border-b-2 border-foreground inline-block">{title}</h2>
-            <div className="bg-card border-2 border-border rounded-sm px-5 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] [&>div:last-child]:border-b-0">
-                {children}
-            </div>
-        </section>
-    )
-}
-
-function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
-    return (
-        <button onClick={() => onChange(!value)} className={`w-12 h-6 border-2 transition-colors flex items-center ${value ? 'bg-foreground border-foreground justify-end' : 'border-border justify-start'}`}>
-            <span className={`w-4 h-4 m-0.5 ${value ? 'bg-background' : 'bg-muted-foreground'}`} />
-        </button>
-    )
-}
-
-const SELECT = 'px-3 py-2 bg-background border-2 border-border rounded-sm focus:outline-none focus:border-foreground text-foreground font-mono text-xs uppercase'
-
 export default function SettingsPage() {
     const s = useSettings()
-    const { font, setFont } = useFont()
-    const { texture, setTexture } = useTexture()
     const { theme, setTheme } = useTheme()
 
-    return (
-        <div className="flex flex-col min-h-full">
-            <Header title="Settings" subtitle="Tune Vance to your workflow." />
+    const themeOptions = [
+        { v: 'light', i: Sun, label: 'Light' },
+        { v: 'dark', i: Moon, label: 'Dark' },
+        { v: 'system', i: Monitor, label: 'System' },
+    ] as const
 
-            <div className="flex-1 max-w-3xl mx-auto w-full px-4 md:px-6 py-6 space-y-10">
+    return (
+        <div className="flex min-h-full flex-col">
+            <PageHeader title="Settings" description="Tune Vance to your workflow." icon={Palette} />
+
+            <PageBody width="narrow" className="space-y-6">
                 {/* Scheduling */}
-                <Section title="Scheduling">
-                    <Row label="Daily Capacity" desc="Working hours per day used to auto-pack tasks">
-                        <div className="flex items-center border-2 border-border">
-                            <button onClick={() => s.setHoursPerDay(Math.max(1, s.hoursPerDay - 1))} className="p-2 hover:bg-muted transition-colors"><Minus size={13} /></button>
-                            <span className="px-3 text-sm font-black tabular-nums">{s.hoursPerDay}h</span>
-                            <button onClick={() => s.setHoursPerDay(s.hoursPerDay + 1)} className="p-2 hover:bg-muted transition-colors"><Plus size={13} /></button>
-                        </div>
-                    </Row>
-                    <Row label="Currency" desc="Symbol or code, e.g. $ or Rs">
-                        <input value={s.currencySymbol} onChange={e => s.setCurrencySymbol(e.target.value)} className={`${SELECT} w-24 text-center`} maxLength={6} />
-                    </Row>
-                    <Row label="Default Schedule View" desc="Daily or weekly grouping">
-                        <select value={s.defaultView} onChange={e => s.setDefaultView(e.target.value as any)} className={SELECT}>
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                        </select>
-                    </Row>
-                </Section>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <CalendarClock className="size-4 text-primary" /> Scheduling
+                        </CardTitle>
+                        <CardDescription>How the auto-scheduler packs and prices your work.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="divide-y divide-border py-2">
+                        <Row label="Daily capacity" desc="Working hours per day used to auto-pack tasks.">
+                            <div className="flex items-center gap-1 rounded-lg border border-input bg-card p-1">
+                                <Button variant="ghost" size="icon-sm" onClick={() => s.setHoursPerDay(Math.max(1, s.hoursPerDay - 1))}>
+                                    <Minus className="size-4" />
+                                </Button>
+                                <span className="w-12 text-center text-sm font-semibold tabular-nums">{s.hoursPerDay}h</span>
+                                <Button variant="ghost" size="icon-sm" onClick={() => s.setHoursPerDay(s.hoursPerDay + 1)}>
+                                    <Plus className="size-4" />
+                                </Button>
+                            </div>
+                        </Row>
+                        <Row label="Currency" desc="Symbol or code, e.g. $ or Rs.">
+                            <Input
+                                value={s.currencySymbol}
+                                onChange={(e) => s.setCurrencySymbol(e.target.value)}
+                                maxLength={6}
+                                className="w-24 text-center"
+                            />
+                        </Row>
+                        <Row label="Default schedule view" desc="Daily or weekly grouping.">
+                            <Select
+                                value={s.defaultView}
+                                onChange={(e) => s.setDefaultView(e.target.value as any)}
+                                wrapperClassName="w-36"
+                            >
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                            </Select>
+                        </Row>
+                    </CardContent>
+                </Card>
 
                 {/* Appearance */}
-                <Section title="Appearance">
-                    <Row label="Theme" desc="Light, dark or follow system">
-                        <div className="flex border-2 border-border">
-                            {[{ v: 'light', i: Sun }, { v: 'dark', i: Moon }, { v: 'system', i: Monitor }].map(({ v, i: I }) => (
-                                <button key={v} onClick={() => setTheme(v)} className={`p-2 transition-colors ${theme === v ? 'bg-foreground text-background' : 'hover:bg-muted'}`} title={v}>
-                                    <I size={15} />
-                                </button>
-                            ))}
-                        </div>
-                    </Row>
-                    <Row label="Font" desc="App-wide typeface">
-                        <select value={font} onChange={e => setFont(e.target.value as any)} className={SELECT}>
-                            {FONTS.map(f => <option key={f} value={f}>{f.replace('-', ' ')}</option>)}
-                        </select>
-                    </Row>
-                    <Row label="Background Texture" desc="Subtle surface pattern">
-                        <select value={texture} onChange={e => setTexture(e.target.value as any)} className={SELECT}>
-                            {TEXTURES.map(t => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                    </Row>
-                </Section>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Palette className="size-4 text-primary" /> Appearance
+                        </CardTitle>
+                        <CardDescription>Choose how Vance looks on this device.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="py-2">
+                        <Row label="Theme" desc="Light, dark, or follow your system.">
+                            <div className="flex gap-1 rounded-lg border border-input bg-card p-1">
+                                {themeOptions.map(({ v, i: Icon, label }) => (
+                                    <button
+                                        key={v}
+                                        onClick={() => setTheme(v)}
+                                        className={cn(
+                                            'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors',
+                                            theme === v
+                                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                        )}
+                                        title={label}
+                                    >
+                                        <Icon className="size-4" />
+                                        <span className="hidden sm:inline">{label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </Row>
+                    </CardContent>
+                </Card>
 
-                {/* Cards */}
-                <Section title="Cards & Lists">
-                    <Row label="Strikethrough Completed" desc="Cross out finished tasks">
-                        <Toggle value={s.strikethroughCompleted} onChange={s.setStrikethroughCompleted} />
-                    </Row>
-                    <Row label="Glassy Cards" desc="Translucent card surfaces">
-                        <Toggle value={s.glassyCards} onChange={s.setGlassyCards} />
-                    </Row>
-                    <Row label="Compact Cards" desc="Tighter spacing in lists">
-                        <Toggle value={s.compactCards} onChange={s.setCompactCards} />
-                    </Row>
-                </Section>
+                {/* Tasks & Display */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <ListChecks className="size-4 text-primary" /> Tasks &amp; Lists
+                        </CardTitle>
+                        <CardDescription>Small behaviors for task and schedule lists.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="py-2">
+                        <Row label="Strikethrough completed" desc="Cross out tasks once they're finished.">
+                            <Switch checked={s.strikethroughCompleted} onCheckedChange={s.setStrikethroughCompleted} aria-label="Strikethrough completed tasks" />
+                        </Row>
+                    </CardContent>
+                </Card>
 
-                <p className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-widest pt-4">
+                <p className="pt-2 text-xs text-muted-foreground">
                     Preferences are stored locally in your browser.
                 </p>
-            </div>
+            </PageBody>
         </div>
     )
 }

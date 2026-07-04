@@ -1,7 +1,7 @@
 'use client'
 
-import { Menu, X } from 'lucide-react'
-import { Logo } from '@/components/ui/logo'
+import { Menu, X } from '@/components/ui/icons'
+import { Brand } from '@/components/layout/brand'
 
 interface GlobalHeaderProps {
     isOpen: boolean
@@ -10,29 +10,18 @@ interface GlobalHeaderProps {
 
 export function GlobalHeader({ isOpen, onToggle }: GlobalHeaderProps) {
     return (
-        <header className="fixed top-0 left-0 right-0 h-16 bg-white/20 dark:bg-background/20 backdrop-blur-md z-[100] border-b border-border/10 md:hidden flex justify-between items-center px-4">
-            <div className="flex items-center gap-4">
+        <header className="fixed left-0 right-0 top-0 z-[100] flex h-14 items-center justify-between border-b border-border bg-background/85 px-4 backdrop-blur md:hidden">
+            <div className="flex items-center gap-3">
                 <button
                     onClick={onToggle}
-                    className="p-2 -ml-2 hover:bg-secondary rounded-sm transition-colors border border-transparent active:border-border"
+                    className="-ml-1 rounded-lg p-2 text-foreground transition-colors hover:bg-accent"
                     aria-label="Toggle menu"
                 >
-                    {isOpen ? (
-                        <X className="w-5 h-5 text-foreground" />
-                    ) : (
-                        <Menu className="w-5 h-5 text-foreground" />
-                    )}
+                    {isOpen ? <X className="size-5" /> : <Menu className="size-5" />}
                 </button>
-                <div className="flex flex-col">
-                    <div className="text-sm leading-none">
-                        <Logo />
-                    </div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1 leading-none">
-                        Precision Freelance Ops
-                    </div>
-                </div>
+                <Brand />
             </div>
-            <div id="mobile-header-actions" className="flex items-center" />
+            <div id="mobile-header-actions" className="flex items-center gap-2" />
         </header>
     )
 }

@@ -1,7 +1,12 @@
 'use client'
 
+import { CalendarCheck } from '@/components/ui/icons'
 import { ScheduledTask } from '@/lib/scheduler'
 import { ScheduleTaskCard } from './schedule-task-card'
+import { Card } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { EmptyState } from '@/components/ui/empty-state'
+import { cn } from '@/lib/utils'
 
 export function DailyView({
     items,
@@ -23,23 +28,25 @@ export function DailyView({
     return (
         <div className="max-w-2xl space-y-4">
             {/* Capacity summary */}
-            <div className="border-2 border-border bg-card/40 p-4">
-                <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Planned for this day</span>
-                    <span className={`font-mono text-sm font-black ${over ? 'text-red-500' : ''}`}>{hours}h / {hoursPerDay}h</span>
+            <Card className="p-4">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                    <span className="text-sm font-medium text-foreground">Planned for this day</span>
+                    <span className={cn('font-mono text-sm font-semibold tabular-nums', over ? 'text-destructive' : 'text-foreground')}>
+                        {hours}h / {hoursPerDay}h
+                    </span>
                 </div>
-                <div className="h-2 w-full bg-muted overflow-hidden">
-                    <div className="h-full transition-all" style={{ width: `${pct}%`, background: over ? '#ef4444' : 'hsl(var(--foreground))' }} />
-                </div>
-                <div className="mt-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                <Progress value={pct} indicatorClassName={over ? 'bg-destructive' : 'bg-highlight'} />
+                <p className="mt-2 text-xs text-muted-foreground">
                     {pending.length} to do{finished.length > 0 ? ` · ${finished.length} done` : ''}
-                </div>
-            </div>
+                </p>
+            </Card>
 
             {items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-border text-center">
-                    <span className="font-mono text-sm uppercase tracking-widest text-muted-foreground/50">Nothing scheduled for this day</span>
-                </div>
+                <EmptyState
+                    icon={CalendarCheck}
+                    title="Nothing scheduled"
+                    description="This day is clear. Enjoy the breathing room, or pull work forward."
+                />
             ) : (
                 <div className="space-y-2.5">
                     {[...pending, ...finished].map(item => (

@@ -2,6 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Loader2, AlertCircle } from '@/components/ui/icons'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function LoginPage() {
     const [username, setUsername] = useState('')
@@ -26,7 +30,7 @@ export default function LoginPage() {
                 router.push('/schedule')
                 router.refresh()
             } else {
-                setError('Invalid credentials')
+                setError('Invalid username or password.')
             }
         } catch (err) {
             setError('Something went wrong. Please try again.')
@@ -36,64 +40,77 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex flex-1 items-center justify-center p-4 h-full">
-            <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-sm border-2 border-border shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]">
-                <div className="text-center">
-                    <h2 className="mt-6 text-4xl font-black tracking-tighter uppercase text-foreground">
-                        Sign in to Vance
-                    </h2>
-                    <p className="mt-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Freelance Command Center</p>
+        <div className="relative flex h-full flex-1 items-center justify-center p-4">
+            {/* Ambient backdrop */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="absolute -left-32 -top-32 size-96 rounded-full bg-primary/10 blur-3xl" />
+                <div className="absolute -bottom-32 -right-32 size-96 rounded-full bg-highlight/10 blur-3xl" />
+            </div>
+
+            <div className="relative z-10 w-full max-w-sm animate-fade-in">
+                <div className="mb-6 flex flex-col items-center text-center">
+                    <span className="mb-4 flex size-12 items-center justify-center rounded-xl bg-primary font-heading text-xl font-bold text-primary-foreground shadow-elevated">
+                        V
+                    </span>
+                    <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
+                        Welcome back
+                    </h1>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Sign in to your Vance command center
+                    </p>
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="space-y-4">
+
+                <div className="rounded-xl border border-border bg-card p-6 shadow-card">
+                    <form className="space-y-4" onSubmit={handleSubmit}>
                         <div className="space-y-2">
-                            <label htmlFor="username" className="text-xs font-black uppercase tracking-widest text-foreground">
-                                Username
-                            </label>
-                            <input
+                            <Label htmlFor="username">Username</Label>
+                            <Input
                                 id="username"
                                 name="username"
                                 type="text"
+                                autoComplete="username"
                                 required
-                                className="block w-full border-2 border-border bg-card px-4 py-3 text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none transition-colors font-mono text-sm"
-                                placeholder="ENTER USERNAME"
+                                placeholder="Enter your username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-foreground">
-                                Password
-                            </label>
-                            <input
+                            <Label htmlFor="password">Password</Label>
+                            <Input
                                 id="password"
                                 name="password"
                                 type="password"
+                                autoComplete="current-password"
                                 required
-                                className="block w-full border-2 border-border bg-card px-4 py-3 text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none transition-colors font-mono text-sm"
-                                placeholder="ENTER PASSWORD"
+                                placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
-                    </div>
 
-                    {error && (
-                        <div className="p-3 bg-red-500/10 border-2 border-red-500/20 text-red-500 text-xs font-bold uppercase tracking-tight text-center">
-                            {error}
-                        </div>
-                    )}
+                        {error && (
+                            <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+                                <AlertCircle className="size-4 shrink-0" />
+                                <span>{error}</span>
+                            </div>
+                        )}
 
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="group relative flex w-full justify-center border-2 border-foreground bg-foreground px-4 py-3 text-sm font-black uppercase tracking-widest text-background hover:bg-background hover:text-foreground transition-all duration-200 disabled:opacity-50"
-                        >
-                            {isLoading ? 'AUTHENTICATING...' : 'ACCESS SYSTEM'}
-                        </button>
-                    </div>
-                </form>
+                        <Button type="submit" size="lg" disabled={isLoading} className="w-full">
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="size-4 animate-spin" /> Signing in…
+                                </>
+                            ) : (
+                                'Sign in'
+                            )}
+                        </Button>
+                    </form>
+                </div>
+
+                <p className="mt-6 text-center text-xs text-muted-foreground">
+                    Precision freelance operations · Vance
+                </p>
             </div>
         </div>
     )

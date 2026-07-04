@@ -3,6 +3,8 @@
 import { ScheduledTask } from '@/lib/scheduler'
 import { toLocalDateStr, startOfDay } from '@/lib/date-utils'
 import { ScheduleTaskCard } from './schedule-task-card'
+import { Progress } from '@/components/ui/progress'
+import { cn } from '@/lib/utils'
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -38,31 +40,45 @@ export function WeekView({
     })
 
     return (
-        <div className="overflow-x-auto scrollbar-hide -mx-1 px-1 pb-2">
-            <div className="grid grid-cols-1 md:grid-cols-7 gap-3 md:min-w-[1280px]">
+        <div className="scrollbar-hide -mx-1 overflow-x-auto px-1 pb-2">
+            <div className="grid grid-cols-1 gap-3 md:min-w-[1280px] md:grid-cols-7">
                 {days.map(day => {
                     const over = day.hours > hoursPerDay
+                    const pct = Math.min(100, (day.hours / hoursPerDay) * 100)
                     return (
-                        <div key={day.key} className={`flex flex-col border-2 ${day.isToday ? 'border-foreground' : 'border-border'} bg-card/40`}>
+                        <div
+                            key={day.key}
+                            className={cn(
+                                'flex flex-col rounded-xl border bg-card shadow-xs',
+                                day.isToday ? 'border-primary/40 ring-1 ring-primary/40' : 'border-border',
+                                day.isPast && !day.isToday && 'opacity-70'
+                            )}
+                        >
                             {/* Header */}
-                            <div className={`px-3 py-3 border-b-2 ${day.isToday ? 'bg-foreground text-background border-foreground' : day.isPast ? 'border-border opacity-60' : 'border-border'}`}>
+                            <div className="border-b border-border px-3 py-3">
                                 <div className="flex items-baseline justify-between">
-                                    <span className="text-sm font-black uppercase tracking-[0.15em]">{day.isToday ? 'Today' : day.name}</span>
-                                    <span className="font-mono text-[11px] font-bold opacity-70">{day.dateLabel}</span>
+                                    <span className={cn('text-sm font-semibold', day.isToday ? 'text-primary' : 'text-foreground')}>
+                                        {day.isToday ? 'Today' : day.name}
+                                    </span>
+                                    <span className="text-xs tabular-nums text-muted-foreground">{day.dateLabel}</span>
                                 </div>
                                 <div className="mt-2 flex items-center gap-2">
-                                    <div className={`h-1.5 flex-1 ${day.isToday ? 'bg-background/20' : 'bg-muted'} overflow-hidden`}>
-                                        <div className="h-full" style={{ width: `${Math.min(100, (day.hours / hoursPerDay) * 100)}%`, background: over ? '#ef4444' : (day.isToday ? 'currentColor' : 'hsl(var(--foreground))') }} />
-                                    </div>
-                                    <span className="font-mono text-[10px] font-bold opacity-70 shrink-0">{day.hours}h</span>
+                                    <Progress
+                                        value={pct}
+                                        className="h-1.5 flex-1"
+                                        indicatorClassName={over ? 'bg-destructive' : 'bg-highlight'}
+                                    />
+                                    <span className={cn('shrink-0 font-mono text-[11px] tabular-nums', over ? 'text-destructive' : 'text-muted-foreground')}>
+                                        {day.hours}h
+                                    </span>
                                 </div>
                             </div>
 
                             {/* Body */}
-                            <div className="p-2.5 space-y-2.5 flex-1 min-h-[140px]">
+                            <div className="min-h-[140px] flex-1 space-y-2.5 p-2.5">
                                 {day.items.length === 0 ? (
-                                    <div className="h-full min-h-[120px] flex items-center justify-center border border-dashed border-border/50">
-                                        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/40">Free</span>
+                                    <div className="flex h-full min-h-[120px] items-center justify-center">
+                                        <span className="text-xs text-muted-foreground/60">No tasks</span>
                                     </div>
                                 ) : (
                                     [...day.pending, ...day.finished].map(item => (

@@ -1,46 +1,64 @@
 'use client'
 
 import useSWR from 'swr'
-import { Header } from '@/components/layout/header'
+import { PageHeader, PageBody } from '@/components/layout/page-header'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
+import { cn } from '@/lib/utils'
 import { fetcher } from '@/lib/swr-fetcher'
 import { Project } from '@/lib/types'
 import { formatMoney } from '@/lib/format'
 import {
     Loader2, DollarSign, FolderKanban, CheckCircle2, Clock, AlertTriangle,
-    TrendingUp, Layers, GitPullRequestArrow, Wallet, Hourglass, Trophy, Radio, Building2,
-} from 'lucide-react'
+    Layers, GitPullRequestArrow, Wallet, Hourglass, Radio, Building2, BarChart3,
+} from '@/components/ui/icons'
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
-    active: { label: 'Active', color: '#3b82f6' },
-    completed: { label: 'Completed', color: '#10b981' },
-    'on-hold': { label: 'On Hold', color: '#f59e0b' },
-    cancelled: { label: 'Cancelled', color: '#ef4444' },
+    active: { label: 'Active', color: 'hsl(var(--chart-3))' },
+    completed: { label: 'Completed', color: 'hsl(var(--chart-4))' },
+    'on-hold': { label: 'On Hold', color: 'hsl(var(--chart-2))' },
+    cancelled: { label: 'Cancelled', color: 'hsl(var(--chart-5))' },
 }
 
-const FIELD_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#9333ea', '#ef4444', '#0891b2', '#ea580c', '#16a34a']
+const FIELD_COLORS = [
+    'hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))', 'hsl(var(--chart-5))',
+]
 
-function MetricCard({ title, value, icon: Icon, extra, colorClass }: any) {
+const TONE_CHIP = {
+    primary: 'bg-accent text-primary',
+    highlight: 'bg-highlight/15 text-highlight',
+    success: 'bg-success/12 text-success',
+    warning: 'bg-warning/15 text-warning',
+} as const
+
+function MetricCard({ title, value, icon: Icon, extra, tone = 'primary' }: {
+    title: string
+    value: string | number
+    icon: any
+    extra?: string
+    tone?: keyof typeof TONE_CHIP
+}) {
     return (
-        <div className="bg-card border-2 border-border p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] flex flex-col hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.08)] transition-all">
-            <div className="flex justify-between items-start mb-6">
-                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">{title}</span>
-                <div className={`p-2 rounded-sm ${colorClass}`}><Icon size={20} strokeWidth={2.5} /></div>
-            </div>
-            <div className="mt-auto">
-                <span className="text-4xl font-black tracking-tighter text-foreground leading-none">{value}</span>
-                {extra && <div className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{extra}</div>}
-            </div>
-        </div>
+        <Card>
+            <CardContent className="flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-3">
+                    <span className="text-sm text-muted-foreground">{title}</span>
+                    <div className={cn('flex size-9 shrink-0 items-center justify-center rounded-lg', TONE_CHIP[tone])}>
+                        <Icon className="size-4" />
+                    </div>
+                </div>
+                <div>
+                    <div className="font-heading text-2xl font-semibold leading-none tabular-nums text-foreground md:text-3xl">{value}</div>
+                    {extra && <div className="mt-1.5 text-xs text-muted-foreground">{extra}</div>}
+                </div>
+            </CardContent>
+        </Card>
     )
 }
 
-function SectionHeader({ title, accent }: { title: string; accent?: string }) {
-    return (
-        <div className="flex items-center gap-4 border-b-2 border-border/10 pb-4">
-            <h2 className="text-2xl font-black uppercase tracking-tighter" style={accent ? { color: accent } : undefined}>{title}</h2>
-            <div className="h-1 flex-1" style={{ backgroundColor: accent ? `${accent}1A` : 'rgba(0,0,0,0.05)' }} />
-        </div>
-    )
+function SectionHeader({ title }: { title: string }) {
+    return <h2 className="font-heading text-lg font-semibold tracking-tight text-foreground">{title}</h2>
 }
 
 export default function AnalyticsPage() {
@@ -48,21 +66,25 @@ export default function AnalyticsPage() {
 
     if (error) {
         return (
-            <div className="min-h-full flex items-center justify-center p-6">
-                <div className="bg-red-500/10 border-2 border-red-500 p-8 max-w-lg text-center">
-                    <AlertTriangle className="mx-auto text-red-500 mb-4 w-12 h-12" />
-                    <h2 className="text-xl font-black uppercase text-red-500 mb-2">Error Loading Analytics</h2>
-                    <p className="text-sm font-bold text-red-500/70 uppercase font-mono">{error.message}</p>
-                </div>
+            <div className="flex min-h-full flex-col">
+                <PageHeader title="Analytics" description="Revenue, time, and delivery insights." icon={BarChart3} />
+                <PageBody width="wide">
+                    <EmptyState icon={AlertTriangle} title="Couldn't load analytics" description={error.message} />
+                </PageBody>
             </div>
         )
     }
 
     if (!projects) {
         return (
-            <div className="min-h-full flex flex-col items-center justify-center gap-4">
-                <Loader2 className="w-12 h-12 animate-spin text-muted-foreground" />
-                <p className="font-mono text-muted-foreground uppercase tracking-widest font-bold animate-pulse">Computing Matrix...</p>
+            <div className="flex min-h-full flex-col">
+                <PageHeader title="Analytics" description="Revenue, time, and delivery insights." icon={BarChart3} />
+                <PageBody width="wide">
+                    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3">
+                        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">Loading…</p>
+                    </div>
+                </PageBody>
             </div>
         )
     }
@@ -141,210 +163,239 @@ export default function AnalyticsPage() {
     const statusEntries = Object.entries(byStatus)
 
     return (
-        <div className="flex flex-col min-h-full">
-            <Header title="Analytics Center" subtitle="Your freelance operation, quantified." hideOnMobile />
+        <div className="flex min-h-full flex-col">
+            <PageHeader title="Analytics" description="Revenue, time, and delivery insights." icon={BarChart3} />
 
-            <div className="flex-1 p-6">
-                <div className="max-w-[1400px] mx-auto space-y-12 pb-24">
+            <PageBody width="wide">
+                <div className="space-y-10">
 
                     {/* Global Overview */}
-                    <div className="space-y-4">
+                    <section className="space-y-4">
                         <SectionHeader title="Global Overview" />
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <MetricCard title="Total Pipeline" value={money(totalRevenue)} icon={DollarSign} colorClass="bg-indigo-500/10 text-indigo-500" extra="Across all live projects" />
-                            <MetricCard title="Earned" value={money(earnedRevenue)} icon={Wallet} colorClass="bg-green-500/10 text-green-500" extra="Marked as paid" />
-                            <MetricCard title="Pending" value={money(pendingRevenue)} icon={Hourglass} colorClass="bg-amber-500/10 text-amber-500" extra="Awaiting payment" />
-                            <MetricCard title="Active Projects" value={activeCount} icon={FolderKanban} colorClass="bg-blue-500/10 text-blue-500" extra={`${completedCount} completed`} />
+                        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                            <MetricCard title="Total Pipeline" value={money(totalRevenue)} icon={DollarSign} tone="primary" extra="Across all live projects" />
+                            <MetricCard title="Earned" value={money(earnedRevenue)} icon={Wallet} tone="success" extra="Marked as paid" />
+                            <MetricCard title="Pending" value={money(pendingRevenue)} icon={Hourglass} tone="warning" extra="Awaiting payment" />
+                            <MetricCard title="Active Projects" value={activeCount} icon={FolderKanban} tone="primary" extra={`${completedCount} completed`} />
                         </div>
-                    </div>
+                    </section>
 
                     {/* Earnings banner */}
-                    <div className="bg-foreground text-background p-8 lg:p-12 relative overflow-hidden border-2 border-border/20 shadow-[10px_10px_0px_0px_rgba(0,0,0,0.1)]">
-                        <div className="absolute inset-0 opacity-10 bg-[url('/textures/hexellence.png')] mix-blend-overlay" />
-                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                            <div className="space-y-2">
-                                <h3 className="text-xl md:text-2xl font-black uppercase tracking-widest text-background/80">Total Earned to Date</h3>
-                                <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-60">{money(changeRevenue)} of it from change requests</p>
+                    <Card className="border-transparent bg-primary text-primary-foreground shadow-elevated">
+                        <CardContent className="flex flex-col items-start justify-between gap-6 p-6 md:flex-row md:items-center md:p-8">
+                            <div className="space-y-1.5">
+                                <h3 className="font-heading text-lg font-semibold text-primary-foreground">Total Earned to Date</h3>
+                                <p className="text-sm text-primary-foreground/70">{money(changeRevenue)} of it from change requests</p>
                             </div>
-                            <div className="text-5xl md:text-7xl font-black tracking-tighter leading-none">{money(earnedRevenue)}</div>
-                        </div>
-                    </div>
+                            <div className="font-heading text-4xl font-semibold leading-none tabular-nums md:text-6xl">{money(earnedRevenue)}</div>
+                        </CardContent>
+                    </Card>
 
                     {/* Workload */}
-                    <div className="space-y-4 pt-4 border-t-2 border-border/10">
-                        <SectionHeader title="Workload" accent="#10b981" />
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <MetricCard title="Total Tasks" value={totalTasks} icon={Layers} colorClass="bg-teal-500/10 text-teal-500" extra={`${completedTasks} completed`} />
-                            <MetricCard title="Completion" value={`${totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0}%`} icon={CheckCircle2} colorClass="bg-green-500/10 text-green-500" extra="Of all tasks" />
-                            <MetricCard title="Hours Logged" value={`${Math.round(completedHours)}h`} icon={Clock} colorClass="bg-cyan-500/10 text-cyan-500" extra={`of ${Math.round(totalHours)}h planned`} />
-                            <MetricCard title="Total Changes" value={totalChanges} icon={GitPullRequestArrow} colorClass="bg-purple-500/10 text-purple-500" extra={`${avgChanges.toFixed(1)} avg / project`} />
+                    <section className="space-y-4">
+                        <SectionHeader title="Workload" />
+                        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                            <MetricCard title="Total Tasks" value={totalTasks} icon={Layers} tone="primary" extra={`${completedTasks} completed`} />
+                            <MetricCard title="Completion" value={`${totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0}%`} icon={CheckCircle2} tone="success" extra="Of all tasks" />
+                            <MetricCard title="Hours Logged" value={`${Math.round(completedHours)}h`} icon={Clock} tone="primary" extra={`of ${Math.round(totalHours)}h planned`} />
+                            <MetricCard title="Total Changes" value={totalChanges} icon={GitPullRequestArrow} tone="highlight" extra={`${avgChanges.toFixed(1)} avg / project`} />
                         </div>
-                    </div>
+                    </section>
 
                     {/* Fields + Sources */}
-                    <div className="space-y-6 pt-4 border-t-2 border-border/10">
+                    <section className="space-y-4">
                         <SectionHeader title="Where Your Time Goes" />
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                             {/* Fields */}
-                            <div className="bg-card border-2 border-border p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div>
-                                        <h3 className="text-base font-black uppercase tracking-tight">Fields You Work In Most</h3>
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mt-1">By planned hours</p>
-                                    </div>
-                                    <div className="p-2 rounded-sm bg-blue-500/10 text-blue-500"><Layers size={20} strokeWidth={2.5} /></div>
-                                </div>
-                                {rankedFields.length === 0 ? (
-                                    <div className="h-40 flex items-center justify-center text-muted-foreground font-mono uppercase tracking-widest font-bold text-xs">No field data</div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {rankedFields.slice(0, 8).map(([field, s], i) => (
-                                            <div key={field} className="space-y-1">
-                                                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                                                    <span>{field} <span className="text-muted-foreground/60">· {s.count} proj</span></span>
-                                                    <span className="text-muted-foreground">{Math.round(s.hours)}h</span>
-                                                </div>
-                                                <div className="h-2.5 w-full bg-muted/30 overflow-hidden">
-                                                    <div className="h-full transition-all duration-700" style={{ width: `${(s.hours / maxFieldHours) * 100}%`, backgroundColor: FIELD_COLORS[i % FIELD_COLORS.length] }} />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Sources */}
-                            <div className="bg-card border-2 border-border p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div>
-                                        <h3 className="text-base font-black uppercase tracking-tight">Revenue by Source</h3>
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mt-1">Where leads come from</p>
-                                    </div>
-                                    <div className="p-2 rounded-sm bg-amber-500/10 text-amber-500"><Radio size={20} strokeWidth={2.5} /></div>
-                                </div>
-                                {rankedSources.length === 0 ? (
-                                    <div className="h-40 flex items-center justify-center text-muted-foreground font-mono uppercase tracking-widest font-bold text-xs">No source data</div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {rankedSources.map(([src, s], i) => (
-                                            <div key={src} className="space-y-1">
-                                                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                                                    <span>{src} <span className="text-muted-foreground/60">· {s.count}</span></span>
-                                                    <span className="text-muted-foreground">{money(s.revenue)}</span>
-                                                </div>
-                                                <div className="h-2.5 w-full bg-muted/30 overflow-hidden">
-                                                    <div className="h-full bg-amber-500 transition-all duration-700" style={{ width: `${(s.revenue / maxSourceRev) * 100}%` }} />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Status + Client + Changes */}
-                    <div className="space-y-4 pt-4 border-t-2 border-border/10">
-                        <SectionHeader title="Portfolio Breakdown" accent="#9333ea" />
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Status split */}
-                            <div className="bg-card border-2 border-border p-6">
-                                <h3 className="text-base font-black uppercase tracking-tight mb-5">Project Status</h3>
-                                <div className="space-y-3">
-                                    {statusEntries.map(([st, count]) => {
-                                        const meta = STATUS_META[st] || { label: st, color: '#888' }
-                                        const pct = projects.length ? Math.round((count / projects.length) * 100) : 0
-                                        return (
-                                            <div key={st} className="space-y-1">
-                                                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                                                    <span style={{ color: meta.color }}>{meta.label} ({count})</span>
-                                                    <span className="text-muted-foreground">{pct}%</span>
-                                                </div>
-                                                <div className="h-2.5 w-full bg-muted/30 overflow-hidden">
-                                                    <div className="h-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: meta.color }} />
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Client types */}
-                            <div className="bg-card border-2 border-border p-6">
-                                <div className="flex items-center justify-between mb-5">
-                                    <h3 className="text-base font-black uppercase tracking-tight">Client Types</h3>
-                                    <Building2 size={18} className="text-muted-foreground" />
-                                </div>
-                                <div className="space-y-3">
-                                    {Object.entries(clientTypeStats).sort((a, b) => b[1] - a[1]).map(([ct, count]) => (
-                                        <div key={ct} className="flex items-center justify-between border-b border-border/40 pb-2">
-                                            <span className="text-xs font-bold uppercase tracking-wider">{ct}</span>
-                                            <span className="text-lg font-black tracking-tighter">{count}</span>
+                            <Card>
+                                <CardHeader
+                                    action={
+                                        <div className="flex size-9 items-center justify-center rounded-lg bg-accent text-primary">
+                                            <Layers className="size-4" />
                                         </div>
-                                    ))}
-                                    {Object.keys(clientTypeStats).length === 0 && <p className="text-xs font-mono text-muted-foreground uppercase">No data</p>}
-                                </div>
-                            </div>
-
-                            {/* Changes */}
-                            <div className="bg-card border-2 border-border p-6 flex flex-col">
-                                <div className="flex items-center justify-between mb-5">
-                                    <h3 className="text-base font-black uppercase tracking-tight">Change Requests</h3>
-                                    <GitPullRequestArrow size={18} className="text-muted-foreground" />
-                                </div>
-                                <div className="space-y-4 mt-auto">
-                                    <div>
-                                        <div className="text-4xl font-black tracking-tighter">{totalChanges}</div>
-                                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total changes · {money(changeRevenue)} billed</div>
-                                    </div>
-                                    {topChangeClient && (
-                                        <div className="pt-3 border-t-2 border-border/10">
-                                            <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Most Demanding Client</div>
-                                            <div className="text-sm font-black uppercase tracking-tight mt-1">{topChangeClient[0]}</div>
-                                            <div className="text-[10px] font-mono text-muted-foreground">{topChangeClient[1]} change requests</div>
+                                    }
+                                >
+                                    <CardTitle>Fields You Work In Most</CardTitle>
+                                    <CardDescription>By planned hours</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {rankedFields.length === 0 ? (
+                                        <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">No field data</div>
+                                    ) : (
+                                        <div className="space-y-3.5">
+                                            {rankedFields.slice(0, 8).map(([field, s], i) => (
+                                                <div key={field} className="space-y-1.5">
+                                                    <div className="flex items-center justify-between gap-2 text-sm">
+                                                        <span className="flex min-w-0 items-center gap-2">
+                                                            <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: FIELD_COLORS[i % FIELD_COLORS.length] }} />
+                                                            <span className="truncate font-medium text-foreground">{field}</span>
+                                                            <span className="shrink-0 text-muted-foreground">· {s.count} proj</span>
+                                                        </span>
+                                                        <span className="shrink-0 tabular-nums text-muted-foreground">{Math.round(s.hours)}h</span>
+                                                    </div>
+                                                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                                                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(s.hours / maxFieldHours) * 100}%`, backgroundColor: FIELD_COLORS[i % FIELD_COLORS.length] }} />
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
-                                </div>
-                            </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Sources */}
+                            <Card>
+                                <CardHeader
+                                    action={
+                                        <div className="flex size-9 items-center justify-center rounded-lg bg-highlight/15 text-highlight">
+                                            <Radio className="size-4" />
+                                        </div>
+                                    }
+                                >
+                                    <CardTitle>Revenue by Source</CardTitle>
+                                    <CardDescription>Where leads come from</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {rankedSources.length === 0 ? (
+                                        <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">No source data</div>
+                                    ) : (
+                                        <div className="space-y-3.5">
+                                            {rankedSources.map(([src, s]) => (
+                                                <div key={src} className="space-y-1.5">
+                                                    <div className="flex items-center justify-between gap-2 text-sm">
+                                                        <span className="flex min-w-0 items-center gap-2">
+                                                            <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: 'hsl(var(--chart-2))' }} />
+                                                            <span className="truncate font-medium text-foreground">{src}</span>
+                                                            <span className="shrink-0 text-muted-foreground">· {s.count}</span>
+                                                        </span>
+                                                        <span className="shrink-0 tabular-nums text-muted-foreground">{money(s.revenue)}</span>
+                                                    </div>
+                                                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                                                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(s.revenue / maxSourceRev) * 100}%`, backgroundColor: 'hsl(var(--chart-2))' }} />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
                         </div>
-                    </div>
+                    </section>
+
+                    {/* Status + Client + Changes */}
+                    <section className="space-y-4">
+                        <SectionHeader title="Portfolio Breakdown" />
+                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                            {/* Status split */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Project Status</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-3.5">
+                                        {statusEntries.map(([st, count]) => {
+                                            const meta = STATUS_META[st] || { label: st, color: 'hsl(var(--muted-foreground))' }
+                                            const pct = projects.length ? Math.round((count / projects.length) * 100) : 0
+                                            return (
+                                                <div key={st} className="space-y-1.5">
+                                                    <div className="flex items-center justify-between gap-2 text-sm">
+                                                        <span className="flex min-w-0 items-center gap-2">
+                                                            <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: meta.color }} />
+                                                            <span className="truncate font-medium text-foreground">{meta.label}</span>
+                                                            <span className="shrink-0 tabular-nums text-muted-foreground">({count})</span>
+                                                        </span>
+                                                        <span className="shrink-0 tabular-nums text-muted-foreground">{pct}%</span>
+                                                    </div>
+                                                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                                                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: meta.color }} />
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Client types */}
+                            <Card>
+                                <CardHeader
+                                    action={<Building2 className="size-[18px] text-muted-foreground" />}
+                                >
+                                    <CardTitle>Client Types</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-1">
+                                        {Object.entries(clientTypeStats).sort((a, b) => b[1] - a[1]).map(([ct, count]) => (
+                                            <div key={ct} className="flex items-center justify-between border-b border-border py-2.5 last:border-0">
+                                                <span className="text-sm font-medium text-foreground">{ct}</span>
+                                                <span className="font-heading text-lg font-semibold tabular-nums text-foreground">{count}</span>
+                                            </div>
+                                        ))}
+                                        {Object.keys(clientTypeStats).length === 0 && <p className="text-sm text-muted-foreground">No data</p>}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Changes */}
+                            <Card>
+                                <CardHeader
+                                    action={<GitPullRequestArrow className="size-[18px] text-muted-foreground" />}
+                                >
+                                    <CardTitle>Change Requests</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div>
+                                        <div className="font-heading text-3xl font-semibold leading-none tabular-nums text-foreground">{totalChanges}</div>
+                                        <div className="mt-1.5 text-xs text-muted-foreground">Total changes · {money(changeRevenue)} billed</div>
+                                    </div>
+                                    {topChangeClient && (
+                                        <div className="border-t border-border pt-3">
+                                            <div className="text-xs text-muted-foreground">Most demanding client</div>
+                                            <div className="mt-1 text-sm font-medium text-foreground">{topChangeClient[0]}</div>
+                                            <div className="text-xs text-muted-foreground"><span className="tabular-nums">{topChangeClient[1]}</span> change requests</div>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </section>
 
                     {/* Leaderboard */}
-                    <div className="space-y-6 pt-4 border-t-2 border-border/10">
+                    <section className="space-y-4">
                         <SectionHeader title="Top Projects by Value" />
                         {leaderboard.length === 0 ? (
-                            <div className="p-12 text-center text-muted-foreground font-mono uppercase tracking-widest font-bold border-2 border-dashed border-border/50">No projects yet</div>
+                            <EmptyState icon={FolderKanban} title="No projects yet" description="Value rankings will appear here once you add projects." />
                         ) : (
-                            <div className="bg-card border-2 border-border p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)]">
-                                <div className="space-y-3">
+                            <Card>
+                                <CardContent className="space-y-1">
                                     {leaderboard.map(({ p, value }, idx) => (
-                                        <div key={p._id} className="grid grid-cols-12 items-center gap-4 py-2 group">
-                                            <div className="col-span-1 text-2xl font-black tracking-tighter text-muted-foreground/40 group-hover:text-foreground transition-colors">{String(idx + 1).padStart(2, '0')}</div>
+                                        <div key={p._id} className="group grid grid-cols-12 items-center gap-4 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/60">
+                                            <div className="col-span-1 font-heading text-lg font-semibold tabular-nums text-muted-foreground/60 transition-colors group-hover:text-foreground">{String(idx + 1).padStart(2, '0')}</div>
                                             <div className="col-span-5 min-w-0">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
-                                                    <span className="text-sm font-black uppercase tracking-tight truncate">{p.name}</span>
+                                                    <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: p.color }} />
+                                                    <span className="truncate text-sm font-medium text-foreground">{p.name}</span>
                                                 </div>
-                                                <div className="text-[10px] font-mono font-bold text-muted-foreground/70 mt-0.5">{p.clientName || '—'} · {p.status}</div>
+                                                <div className="mt-0.5 truncate text-xs text-muted-foreground">{p.clientName || '—'} · {p.status}</div>
                                             </div>
                                             <div className="col-span-4">
-                                                <div className="w-full h-3 bg-muted/30 border border-border/10 overflow-hidden">
-                                                    <div className="h-full transition-all duration-700" style={{ width: `${(value / maxValue) * 100}%`, backgroundColor: p.color }} />
+                                                <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                                                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(value / maxValue) * 100}%`, backgroundColor: p.color }} />
                                                 </div>
                                             </div>
-                                            <div className="col-span-2 flex items-center justify-end gap-2">
-                                                {!p.paid && <Hourglass size={12} className="text-amber-500" />}
-                                                <span className="text-base font-black tracking-tighter tabular-nums">{money(value)}</span>
+                                            <div className="col-span-2 flex items-center justify-end gap-1.5">
+                                                {!p.paid && <Hourglass className="size-3.5 text-warning" />}
+                                                <span className="font-heading text-sm font-semibold tabular-nums text-foreground">{money(value)}</span>
                                             </div>
                                         </div>
                                     ))}
-                                </div>
-                            </div>
+                                </CardContent>
+                            </Card>
                         )}
-                    </div>
+                    </section>
 
                 </div>
-            </div>
+            </PageBody>
         </div>
     )
 }

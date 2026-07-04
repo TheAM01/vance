@@ -32,7 +32,8 @@ No test suite is configured. `next.config.mjs` sets `typescript.ignoreBuildError
 
 Next.js 16 App Router, React 18, TypeScript (strict). Tailwind CSS v3 (the v4 PostCSS
 package is present but `tailwind.config.ts` + `tailwindcss@3` are authoritative). Path
-alias `@/*` → repo root. Icons: `lucide-react`. Data: `swr`. Animations: `framer-motion`.
+alias `@/*` → repo root. Icons: Heroicons, re-exported under friendly names from
+`components/ui/icons.tsx` (swap the icon set in that one file). Data: `swr`. Animations: `framer-motion`.
 Fonts via `next/font` + `geist`.
 
 ### Auth & routing

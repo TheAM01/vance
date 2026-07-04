@@ -2,8 +2,12 @@
 
 import { useState } from 'react'
 import useSWR from 'swr'
-import { Plus, FolderKanban } from 'lucide-react'
-import { Header } from '@/components/layout/header'
+import { Plus, FolderKanban } from '@/components/ui/icons'
+import { PageHeader, PageBody } from '@/components/layout/page-header'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/empty-state'
+import { cn } from '@/lib/utils'
 import { ProjectCard } from '@/components/projects/project-card'
 import { ProjectFormModal, ProjectFormValues } from '@/components/projects/project-form-modal'
 import { fetcher } from '@/lib/swr-fetcher'
@@ -44,20 +48,21 @@ export default function ProjectsPage() {
     }, {} as Record<string, number>)
 
     return (
-        <div className="flex flex-col min-h-full">
-            <Header title="Projects" subtitle="Every client engagement, end to end.">
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 bg-foreground text-background hover:bg-background hover:text-foreground duration-200 transition-colors border-2 border-foreground font-bold text-sm uppercase tracking-wide h-10 rounded-sm"
-                >
-                    <Plus size={18} />
+        <div className="flex min-h-full flex-col">
+            <PageHeader
+                title="Projects"
+                description="Every client engagement, end to end."
+                icon={FolderKanban}
+            >
+                <Button variant="highlight" onClick={() => setIsModalOpen(true)}>
+                    <Plus />
                     New Project
-                </button>
-            </Header>
+                </Button>
+            </PageHeader>
 
-            <div className="flex-1 max-w-6xl mx-auto px-4 py-6 md:py-8 w-full">
-                {/* Filter tabs */}
-                <div className="flex flex-wrap gap-2 mb-6">
+            <PageBody width="wide">
+                {/* Status filter */}
+                <div className="mb-6 flex w-fit max-w-full flex-wrap gap-1 rounded-lg border border-border bg-muted/40 p-1">
                     {FILTERS.map(f => {
                         const count = f.value === 'all' ? (projects?.length || 0) : (counts[f.value] || 0)
                         const active = filter === f.value
@@ -65,42 +70,46 @@ export default function ProjectsPage() {
                             <button
                                 key={f.value}
                                 onClick={() => setFilter(f.value)}
-                                className={`px-4 py-2 text-[11px] font-black uppercase tracking-widest border-2 transition-all ${active ? 'bg-foreground text-background border-foreground' : 'border-border text-muted-foreground hover:border-foreground hover:text-foreground'}`}
+                                className={cn(
+                                    'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                                    active
+                                        ? 'bg-card text-foreground shadow-xs'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                )}
                             >
-                                {f.label} <span className="opacity-50 ml-1">{count}</span>
+                                {f.label}
+                                <span className="tabular-nums text-xs text-muted-foreground">{count}</span>
                             </button>
                         )
                     })}
                 </div>
 
-                {filtered.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {!projects ? (
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <Skeleton key={i} className="h-56 rounded-xl" />
+                        ))}
+                    </div>
+                ) : filtered.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {filtered.map(project => (
                             <ProjectCard key={project._id} project={project} onChange={mutate} />
                         ))}
                     </div>
+                ) : (
+                    <EmptyState
+                        icon={FolderKanban}
+                        title={filter === 'all' ? 'No projects yet' : `No ${filter} projects`}
+                        description="Create your first project to start adding tasks, tracking changes and scheduling your work."
+                        action={
+                            <Button variant="highlight" onClick={() => setIsModalOpen(true)}>
+                                <Plus />
+                                New Project
+                            </Button>
+                        }
+                    />
                 )}
-
-                {projects && filtered.length === 0 && (
-                    <div className="flex flex-col items-center justify-center p-12 rounded-sm border-2 border-dashed border-border bg-card/30 text-center">
-                        <div className="w-16 h-16 mb-4 flex items-center justify-center text-muted-foreground">
-                            <FolderKanban className="w-8 h-8" />
-                        </div>
-                        <h3 className="text-xl font-black uppercase text-foreground mb-2">
-                            {filter === 'all' ? 'No projects yet' : `No ${filter} projects`}
-                        </h3>
-                        <p className="text-muted-foreground text-sm uppercase tracking-wide max-w-sm mb-6">
-                            Create your first project to start adding tasks, tracking changes and scheduling your work.
-                        </p>
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="px-6 py-2 rounded-sm border-2 border-foreground text-foreground uppercase font-bold text-sm tracking-wide hover:bg-foreground hover:text-background transition-colors"
-                        >
-                            Add one now →
-                        </button>
-                    </div>
-                )}
-            </div>
+            </PageBody>
 
             {isModalOpen && (
                 <ProjectFormModal

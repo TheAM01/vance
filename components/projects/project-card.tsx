@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useState } from 'react'
-import {
-    ChevronRight, Hash, MoreVertical, Trash2, User, DollarSign, ListTodo,
-} from 'lucide-react'
+import { MoreVertical, Trash2 } from '@/components/ui/icons'
 import Link from 'next/link'
-import { Project } from '@/lib/types'
+import { Project, ProjectStatus } from '@/lib/types'
 import { formatMoney } from '@/lib/format'
+import { cn } from '@/lib/utils'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 
 const STATUS_LABEL: Record<string, string> = {
     active: 'Active',
@@ -15,11 +17,11 @@ const STATUS_LABEL: Record<string, string> = {
     cancelled: 'Cancelled',
 }
 
-const STATUS_COLOR: Record<string, string> = {
-    active: 'text-blue-500',
-    completed: 'text-green-500',
-    'on-hold': 'text-amber-500',
-    cancelled: 'text-red-500',
+const STATUS_VARIANT: Record<ProjectStatus, 'primary' | 'warning' | 'success' | 'outline'> = {
+    active: 'primary',
+    'on-hold': 'warning',
+    completed: 'success',
+    cancelled: 'outline',
 }
 
 export function ProjectCard({ project, onChange }: { project: Project; onChange?: () => void }) {
@@ -29,6 +31,7 @@ export function ProjectCard({ project, onChange }: { project: Project; onChange?
     const tasks = project.tasks || []
     const done = tasks.filter(t => t.completed || t.status === 'done').length
     const total = tasks.length
+    const changes = project.changes?.length || 0
 
     const handleDelete = async (e: React.MouseEvent) => {
         e.preventDefault()
@@ -49,95 +52,106 @@ export function ProjectCard({ project, onChange }: { project: Project; onChange?
     }
 
     return (
-        <div className="relative group/card h-full">
-            <Link href={`/projects/${project._id}`} className="block h-full">
+        <Card className="group/card relative flex h-full flex-col overflow-hidden transition-all hover:border-primary/40 hover:shadow-elevated">
+            <Link href={`/projects/${project._id}`} className="flex h-full flex-col">
+                {/* Colored header (uses the project's stored color) */}
                 <div
-                    className="bg-white dark:bg-[#151515] rounded-none p-5 border border-border hover:border-primary transition-all duration-300 cursor-pointer shadow-sm hover:shadow-xl dark:shadow-none dark:hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.3)] h-full flex flex-col"
-                    style={{ borderLeftWidth: '4px', borderLeftColor: project.color }}
+                    className="border-b border-border px-5 py-4"
+                    style={{ backgroundColor: `${project.color || '#215E61'}22` }}
                 >
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1 pr-10">
-                            <h3 className="font-bold text-foreground text-base group-hover/card:text-primary transition-colors uppercase tracking-tight">
+                    <div className="flex items-start gap-2.5">
+                        <span
+                            aria-hidden
+                            className="mt-1 size-2.5 shrink-0 rounded-full ring-2 ring-card"
+                            style={{ backgroundColor: project.color || '#215E61' }}
+                        />
+                        <div className="min-w-0 pr-8">
+                            <p className="truncate text-xs text-muted-foreground">{project.type}</p>
+                            <h3 className="truncate font-heading text-base font-semibold tracking-tight text-foreground transition-colors group-hover/card:text-primary">
                                 {project.name}
                             </h3>
-                            <div className="flex items-center gap-1 mt-1 text-muted-foreground font-mono text-[10px] uppercase tracking-widest">
-                                <Hash size={10} />
-                                <span>{project.type}</span>
-                            </div>
+                            <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                                {project.clientName || 'No client'} · {project.clientType}
+                            </p>
                         </div>
+                    </div>
+                </div>
+
+                {/* Body */}
+                <div className="flex flex-1 flex-col gap-4 px-5 py-4">
+                    {/* Status + paid */}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                        <Badge variant={STATUS_VARIANT[project.status] || 'outline'}>
+                            {STATUS_LABEL[project.status] || project.status}
+                        </Badge>
+                        <Badge variant={project.paid ? 'success' : 'outline'}>
+                            {project.paid ? 'Paid' : 'Unpaid'}
+                        </Badge>
                     </div>
 
                     {/* Fields */}
                     {project.fields?.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mb-3">
+                        <div className="flex flex-wrap gap-1.5">
                             {project.fields.slice(0, 4).map(f => (
-                                <span key={f} className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-secondary text-secondary-foreground border border-border">
+                                <Badge key={f} variant="outline" className="font-normal">
                                     {f}
-                                </span>
+                                </Badge>
                             ))}
+                            {project.fields.length > 4 && (
+                                <Badge variant="outline" className="font-normal">
+                                    +{project.fields.length - 4}
+                                </Badge>
+                            )}
                         </div>
                     )}
 
-                    {/* Info */}
-                    <div className="space-y-2.5 mb-4 pb-4 border-b border-border flex-1">
-                        <div className="flex items-center gap-2 text-xs font-mono">
-                            <User className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                            <span className="text-muted-foreground uppercase truncate">{project.clientName || 'No client'} • {project.clientType}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs font-mono">
-                            <DollarSign className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                            <span className="text-muted-foreground uppercase">{formatMoney(project.amount, project.currency)} • {project.paid ? 'Paid' : 'Unpaid'}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs font-mono">
-                            <ListTodo className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                            <span className="text-muted-foreground uppercase">{done}/{total} Tasks • {project.changes?.length || 0} Changes</span>
-                        </div>
-                        {total > 0 && (
-                            <div className="w-full h-1.5 bg-muted/40 overflow-hidden">
-                                <div className="h-full transition-all duration-500" style={{ width: `${Math.round((done / total) * 100)}%`, backgroundColor: project.color }} />
-                            </div>
-                        )}
+                    {/* Amount */}
+                    <div className="font-heading text-lg font-semibold tabular-nums text-foreground">
+                        {formatMoney(project.amount, project.currency)}
                     </div>
 
-                    {/* Footer */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">Status</p>
-                            <p className={`text-xs font-mono font-bold uppercase tracking-tighter ${STATUS_COLOR[project.status] || 'text-foreground'}`}>
-                                {STATUS_LABEL[project.status] || project.status}
-                            </p>
+                    {/* Progress */}
+                    <div className="mt-auto space-y-1.5 pt-1">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span>Tasks</span>
+                            <span className="tabular-nums">
+                                {done}/{total}
+                                {changes > 0 && ` · ${changes} ${changes === 1 ? 'change' : 'changes'}`}
+                            </span>
                         </div>
-                        <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary group-hover/card:translate-x-1 transition-transform">
-                            Open
-                            <ChevronRight className="w-3.5 h-3.5" />
-                        </div>
+                        <Progress value={total > 0 ? Math.round((done / total) * 100) : 0} />
                     </div>
                 </div>
             </Link>
 
-            {/* Ellipsis Menu */}
-            <div className="absolute top-4 right-4 z-10 flex flex-col items-end">
+            {/* Actions menu */}
+            <div className="absolute right-3 top-3 z-10">
                 <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMenuOpen(!isMenuOpen) }}
-                    className={`p-2 rounded-none border transition-all ${isMenuOpen ? 'bg-foreground text-background border-foreground' : 'bg-card/80 backdrop-blur-sm border-border hover:border-foreground text-foreground'}`}
+                    aria-label="Project actions"
+                    className={cn(
+                        'inline-flex size-8 items-center justify-center rounded-md border transition-colors',
+                        isMenuOpen
+                            ? 'border-border bg-accent text-foreground'
+                            : 'border-transparent text-muted-foreground hover:bg-accent hover:text-foreground'
+                    )}
                 >
-                    <MoreVertical size={14} />
+                    <MoreVertical className="size-4" />
                 </button>
 
                 {isMenuOpen && (
-                    <div className="mt-2 w-52 bg-card border border-border shadow-2xl p-1 z-50">
+                    <div className="absolute right-0 top-9 z-20 w-44 overflow-hidden rounded-lg border border-border bg-card p-1 shadow-popover">
                         <button
                             onClick={handleDelete}
                             disabled={isDeleting}
-                            className="w-full flex items-center gap-3 p-3 text-red-500 hover:bg-red-500 hover:text-white transition-all group/item"
+                            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
                         >
-                            <Trash2 size={14} className="text-red-500 group-hover/item:text-white transition-colors" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">Purge Project</span>
+                            <Trash2 className="size-4" />
+                            {isDeleting ? 'Deleting…' : 'Delete project'}
                         </button>
                     </div>
                 )}
             </div>
-        </div>
+        </Card>
     )
 }

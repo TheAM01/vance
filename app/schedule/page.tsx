@@ -5,9 +5,11 @@ import useSWR from 'swr'
 import Link from 'next/link'
 import {
     Loader2, ChevronLeft, ChevronRight, CalendarRange, CalendarDays, LayoutList,
-    SlidersHorizontal, AlertTriangle, FolderKanban,
-} from 'lucide-react'
-import { Header } from '@/components/layout/header'
+    SlidersHorizontal, AlertTriangle, FolderKanban, Gauge,
+} from '@/components/ui/icons'
+import { PageHeader, PageBody } from '@/components/layout/page-header'
+import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { fetcher } from '@/lib/swr-fetcher'
 import { Project } from '@/lib/types'
 import { useSettings } from '@/components/theme/settings-provider'
@@ -17,6 +19,7 @@ import { DailyView } from '@/components/scheduler/daily-view'
 import { ScheduleTaskCard } from '@/components/scheduler/schedule-task-card'
 import { PropertyPanel } from '@/components/scheduler/property-panel'
 import { startOfDay, toLocalDateStr, parseDateLocal } from '@/lib/date-utils'
+import { cn } from '@/lib/utils'
 
 function mondayOf(d: Date): Date {
     const x = startOfDay(d)
@@ -71,9 +74,9 @@ export default function SchedulePage() {
 
     if (!projects) {
         return (
-            <div className="min-h-full flex flex-col items-center justify-center gap-4">
-                <Loader2 className="w-12 h-12 animate-spin text-muted-foreground" />
-                <p className="font-mono text-muted-foreground uppercase tracking-widest font-bold animate-pulse">Building your schedule...</p>
+            <div className="flex min-h-full flex-col items-center justify-center gap-3">
+                <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Building your schedule…</p>
             </div>
         )
     }
@@ -114,60 +117,65 @@ export default function SchedulePage() {
     ]
 
     return (
-        <div className="flex flex-col min-h-full">
-            <Header title="Schedule" subtitle="What to work on, and when.">
-                <div className="flex border-2 border-border">
+        <div className="flex min-h-full flex-col">
+            <PageHeader title="Schedule" description="Your auto-built day-by-day plan." icon={CalendarRange}>
+                <div className="inline-flex items-center rounded-lg border border-border bg-muted p-0.5">
                     {VIEWS.map(({ v, label, icon: Icon }) => (
-                        <button key={v} onClick={() => setView(v)} className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors ${view === v ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}>
-                            <Icon size={13} /> <span className="hidden sm:inline">{label}</span>
+                        <button
+                            key={v}
+                            onClick={() => setView(v)}
+                            className={cn(
+                                'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors',
+                                view === v ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                            )}
+                        >
+                            <Icon className="size-4" /> <span className="hidden sm:inline">{label}</span>
                         </button>
                     ))}
                 </div>
-                <button onClick={() => setPanelOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-border hover:border-foreground text-[10px] font-black uppercase tracking-widest transition-colors">
-                    <SlidersHorizontal size={13} /> <span className="hidden sm:inline">Filters</span>
-                    {hidden.length > 0 && <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
-                </button>
-            </Header>
+                <Button variant="outline" size="sm" onClick={() => setPanelOpen(true)} className="relative">
+                    <SlidersHorizontal /> <span className="hidden sm:inline">Filters</span>
+                    {hidden.length > 0 && <span className="absolute -right-1 -top-1 size-2 rounded-full bg-primary" />}
+                </Button>
+            </PageHeader>
 
-            <div className="flex-1 w-full px-4 md:px-6 py-5 space-y-5">
+            <PageBody width="wide" className="space-y-5">
                 {/* Control bar */}
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                         {view !== 'list' ? (
                             <>
-                                <button onClick={() => setCursor(d => addDays(d, -step))} className="p-2 border-2 border-border hover:border-foreground transition-colors" title="Previous">
-                                    <ChevronLeft size={15} />
-                                </button>
-                                <div className="px-3 py-2 border-2 border-border min-w-[150px] text-center">
-                                    <span className="text-sm font-black uppercase tracking-tight">
-                                        {view === 'week' ? (isThisWeek ? 'This Week' : weekLabel) : dayLabel}
-                                    </span>
+                                <Button variant="outline" size="icon-sm" onClick={() => setCursor(d => addDays(d, -step))} aria-label="Previous">
+                                    <ChevronLeft />
+                                </Button>
+                                <div className="flex h-8 min-w-[150px] items-center justify-center rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground">
+                                    {view === 'week' ? (isThisWeek ? 'This week' : weekLabel) : dayLabel}
                                 </div>
-                                <button onClick={() => setCursor(d => addDays(d, step))} className="p-2 border-2 border-border hover:border-foreground transition-colors" title="Next">
-                                    <ChevronRight size={15} />
-                                </button>
+                                <Button variant="outline" size="icon-sm" onClick={() => setCursor(d => addDays(d, step))} aria-label="Next">
+                                    <ChevronRight />
+                                </Button>
                                 {!atDefault && (
-                                    <button onClick={() => setCursor(startOfDay(new Date()))} className="px-3 py-2 border-2 border-border hover:border-foreground text-[10px] font-black uppercase tracking-widest transition-colors">
+                                    <Button variant="ghost" size="sm" onClick={() => setCursor(startOfDay(new Date()))}>
                                         Today
-                                    </button>
+                                    </Button>
                                 )}
                             </>
                         ) : (
-                            <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
+                            <span className="text-sm text-muted-foreground">
                                 {scheduled.length} task{scheduled.length === 1 ? '' : 's'} planned
                             </span>
                         )}
                     </div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hidden md:inline">
-                        {hoursPerDay}h / day capacity
+                    <span className="hidden items-center gap-1.5 text-sm tabular-nums text-muted-foreground md:inline-flex">
+                        <Gauge className="size-4" /> {hoursPerDay}h / day capacity
                     </span>
                 </div>
 
                 {/* Overdue heads-up */}
                 {overdueCount > 0 && (
-                    <div className="flex items-center gap-3 px-4 py-3 border-2 border-red-500/30 bg-red-500/10">
-                        <AlertTriangle size={16} className="text-red-500 shrink-0" />
-                        <span className="text-xs font-bold uppercase tracking-wide text-red-500">
+                    <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
+                        <AlertTriangle className="size-4 shrink-0 text-destructive" />
+                        <span className="text-sm text-destructive">
                             {overdueCount} task{overdueCount === 1 ? ' is' : 's are'} past their deadline — scheduled first so you can catch up.
                         </span>
                     </div>
@@ -175,20 +183,18 @@ export default function SchedulePage() {
 
                 {/* Body */}
                 {scheduledAll.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-border bg-card/30 text-center">
-                        <FolderKanban className="w-8 h-8 text-muted-foreground mb-4" />
-                        <h3 className="text-xl font-black uppercase text-foreground mb-2">
-                            {hidden.length > 0 ? 'Everything is hidden' : 'Nothing to schedule yet'}
-                        </h3>
-                        <p className="text-muted-foreground text-sm uppercase tracking-wide max-w-sm mb-6">
-                            {hidden.length > 0
-                                ? 'All your projects are filtered out. Re-enable some in Filters.'
-                                : 'Add tasks to your active projects and Vance lays out exactly what to do, day by day.'}
-                        </p>
-                        <Link href="/projects" className="px-6 py-2 border-2 border-foreground text-foreground uppercase font-bold text-sm tracking-wide hover:bg-foreground hover:text-background transition-colors">
-                            Go to Projects →
-                        </Link>
-                    </div>
+                    <EmptyState
+                        icon={FolderKanban}
+                        title={hidden.length > 0 ? 'Everything is hidden' : 'Nothing to schedule yet'}
+                        description={hidden.length > 0
+                            ? 'All your projects are filtered out. Re-enable some in Filters.'
+                            : 'Add tasks to your active projects and Vance lays out exactly what to do, day by day.'}
+                        action={
+                            <Button asChild>
+                                <Link href="/projects">Go to projects</Link>
+                            </Button>
+                        }
+                    />
                 ) : view === 'week' ? (
                     <WeekView weekStart={weekStart} grouped={grouped} hoursPerDay={hoursPerDay} onToggle={toggle} compact={compactCards} />
                 ) : view === 'day' ? (
@@ -196,21 +202,25 @@ export default function SchedulePage() {
                 ) : (
                     <div className="max-w-2xl space-y-6">
                         {[...grouped.entries()].length === 0 ? (
-                            <div className="p-10 text-center border-2 border-dashed border-border font-mono text-xs uppercase tracking-widest text-muted-foreground/60">
-                                Nothing matches your current filters.
-                            </div>
+                            <EmptyState
+                                icon={LayoutList}
+                                title="Nothing matches your filters"
+                                description="Adjust your filters to see planned work."
+                            />
                         ) : [...grouped.entries()].map(([key, rawItems]) => {
                             const items = [...rawItems].sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0))
                             const dateObj = parseDateLocal(key)
                             const hours = items.filter(i => !i.done).reduce((s, it) => s + Math.max(0.5, it.task.estimatedHours || 1), 0)
                             return (
                                 <div key={key} className="space-y-2.5">
-                                    <div className="flex items-baseline justify-between border-b-2 border-border/30 pb-1.5">
-                                        <h3 className="text-base font-black uppercase tracking-tighter">
+                                    <div className="flex items-baseline justify-between border-b border-border pb-1.5">
+                                        <h3 className="font-heading text-base font-semibold text-foreground">
                                             {listDayLabel(key)}
-                                            <span className="ml-2 font-mono text-[11px] font-bold text-muted-foreground">{dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                            <span className="ml-2 text-sm font-normal tabular-nums text-muted-foreground">
+                                                {dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                            </span>
                                         </h3>
-                                        <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{items.length} · {hours}h</span>
+                                        <span className="font-mono text-xs tabular-nums text-muted-foreground">{items.length} · {hours}h</span>
                                     </div>
                                     <div className="space-y-2.5">
                                         {items.map(item => (
@@ -222,7 +232,7 @@ export default function SchedulePage() {
                         })}
                     </div>
                 )}
-            </div>
+            </PageBody>
 
             <PropertyPanel
                 open={panelOpen}

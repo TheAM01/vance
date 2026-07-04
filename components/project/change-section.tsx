@@ -1,20 +1,28 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Trash2, Pencil, Check, X, GitPullRequestArrow } from 'lucide-react'
+import { useId, useState } from 'react'
+import { Plus, Trash2, Pencil, Check, X, GitPullRequestArrow } from '@/components/ui/icons'
 import { Change, ChangeStatus } from '@/lib/types'
 import { formatMoney } from '@/lib/format'
+import { cn } from '@/lib/utils'
+import { useSettings } from '@/components/theme/settings-provider'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select } from '@/components/ui/select'
+import { EmptyState } from '@/components/ui/empty-state'
 
-const STATUS_STYLE: Record<ChangeStatus, string> = {
-    pending: 'text-amber-500 border-amber-500/30 bg-amber-500/10',
-    'in-progress': 'text-blue-500 border-blue-500/30 bg-blue-500/10',
-    done: 'text-green-500 border-green-500/30 bg-green-500/10',
+const STATUS_VARIANT: Record<ChangeStatus, 'outline' | 'highlight' | 'success'> = {
+    pending: 'outline',
+    'in-progress': 'highlight',
+    done: 'success',
 }
 const STATUS_LABEL: Record<ChangeStatus, string> = { pending: 'Pending', 'in-progress': 'In Progress', done: 'Done' }
 
-const INPUT = 'w-full px-3 py-2 bg-background border-2 border-border rounded-sm focus:outline-none focus:border-foreground text-foreground transition-colors font-mono text-xs'
-
 export function ChangeSection({ projectId, changes, currency, onChange }: { projectId: string; changes: Change[]; currency: string; onChange: () => void }) {
+    const { strikethroughCompleted } = useSettings()
     const [adding, setAdding] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
 
@@ -37,38 +45,48 @@ export function ChangeSection({ projectId, changes, currency, onChange }: { proj
     }
 
     return (
-        <div className="space-y-3">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <GitPullRequestArrow size={16} className="text-muted-foreground" />
-                    <h2 className="text-lg font-black uppercase tracking-tight">Changes</h2>
-                    <span className="text-[10px] font-mono font-bold text-muted-foreground">{done}/{changes?.length || 0}</span>
-                    {extra > 0 && <span className="text-[10px] font-mono font-bold text-green-500">+{formatMoney(extra, currency)}</span>}
-                </div>
-                <button onClick={() => setAdding(v => !v)} className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-foreground bg-foreground text-background text-[10px] font-black uppercase tracking-widest hover:bg-background hover:text-foreground transition-colors">
-                    <Plus size={13} /> Add Change
-                </button>
-            </div>
+        <Card>
+            <CardHeader
+                action={
+                    <Button size="sm" onClick={() => setAdding(v => !v)}>
+                        <Plus /> Add change
+                    </Button>
+                }
+            >
+                <CardTitle className="flex items-center gap-2">
+                    <GitPullRequestArrow className="size-[18px] text-muted-foreground" />
+                    Changes
+                    <span className="text-sm font-normal tabular-nums text-muted-foreground">{done}/{changes?.length || 0}</span>
+                    {extra > 0 && <span className="text-sm font-normal tabular-nums text-success">+{formatMoney(extra, currency)}</span>}
+                </CardTitle>
+            </CardHeader>
 
-            {adding && (
-                <ChangeForm
-                    defaultTitle={nextTitle}
-                    onCancel={() => setAdding(false)}
-                    onSave={async (values) => {
-                        await fetch(`/api/projects/${projectId}/changes`, {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values),
-                        })
-                        setAdding(false)
-                        onChange()
-                    }}
-                />
-            )}
+            <CardContent className="space-y-2">
+                {adding && (
+                    <ChangeForm
+                        defaultTitle={nextTitle}
+                        onCancel={() => setAdding(false)}
+                        onSave={async (values) => {
+                            await fetch(`/api/projects/${projectId}/changes`, {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values),
+                            })
+                            setAdding(false)
+                            onChange()
+                        }}
+                    />
+                )}
 
-            <div className="space-y-2">
                 {sorted.length === 0 && !adding && (
-                    <div className="p-8 text-center border-2 border-dashed border-border text-muted-foreground text-xs font-mono uppercase tracking-widest">
-                        No change requests logged.
-                    </div>
+                    <EmptyState
+                        icon={GitPullRequestArrow}
+                        title="No change requests"
+                        description="Revision requests you log will show up here."
+                        action={
+                            <Button size="sm" onClick={() => setAdding(true)}>
+                                <Plus /> Add change
+                            </Button>
+                        }
+                    />
                 )}
 
                 {sorted.map(change => editingId === change._id ? (
@@ -80,41 +98,43 @@ export function ChangeSection({ projectId, changes, currency, onChange }: { proj
                         onSave={async (values) => { await patchChange(change._id, values); setEditingId(null) }}
                     />
                 ) : (
-                    <div key={change._id} className={`flex items-start gap-3 p-3 border border-border bg-card group ${change.completed ? 'opacity-60' : ''}`}>
+                    <div key={change._id} className="group flex items-start gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/60">
                         <button
                             onClick={() => patchChange(change._id, { completed: !change.completed })}
-                            className={`mt-0.5 w-5 h-5 shrink-0 border-2 flex items-center justify-center transition-colors ${change.completed ? 'bg-foreground border-foreground text-background' : 'border-border hover:border-foreground'}`}
+                            className={cn(
+                                'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors',
+                                change.completed ? 'border-primary bg-primary text-primary-foreground' : 'border-input hover:border-primary'
+                            )}
                         >
                             {change.completed && <Check size={12} strokeWidth={3} />}
                         </button>
 
-                        <div className="flex-1 min-w-0">
-                            <div className={`text-sm font-bold ${change.completed ? 'line-through' : ''}`}>{change.title}</div>
-                            {change.description && <div className="text-xs text-muted-foreground font-mono mt-0.5">{change.description}</div>}
-                            <div className="flex flex-wrap items-center gap-2 mt-2">
-                                <span className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 border ${STATUS_STYLE[change.status]}`}>
-                                    {STATUS_LABEL[change.status]}
-                                </span>
+                        <div className="min-w-0 flex-1">
+                            <div className={cn('text-sm font-medium text-foreground', change.completed && strikethroughCompleted && 'text-muted-foreground line-through')}>{change.title}</div>
+                            {change.description && <div className="mt-0.5 text-xs text-muted-foreground">{change.description}</div>}
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <Badge variant={STATUS_VARIANT[change.status]}>{STATUS_LABEL[change.status]}</Badge>
                                 {change.amount ? (
-                                    <span className="text-[9px] font-mono font-bold text-green-500">+{formatMoney(change.amount, currency)}</span>
+                                    <span className="text-xs font-medium tabular-nums text-success">+{formatMoney(change.amount, currency)}</span>
                                 ) : (
-                                    <span className="text-[9px] font-mono font-bold text-muted-foreground">Free revision</span>
+                                    <span className="text-xs text-muted-foreground">Free revision</span>
                                 )}
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => setEditingId(change._id)} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"><Pencil size={13} /></button>
-                            <button onClick={() => deleteChange(change._id)} className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"><Trash2 size={13} /></button>
+                        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                            <Button variant="ghost" size="icon-sm" onClick={() => setEditingId(change._id)}><Pencil /></Button>
+                            <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive" onClick={() => deleteChange(change._id)}><Trash2 /></Button>
                         </div>
                     </div>
                 ))}
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     )
 }
 
 function ChangeForm({ initial, defaultTitle, onSave, onCancel }: { initial?: Change; defaultTitle: string; onSave: (v: Partial<Change>) => Promise<void>; onCancel: () => void }) {
+    const uid = useId()
     const [title, setTitle] = useState(initial?.title || defaultTitle)
     const [description, setDescription] = useState(initial?.description || '')
     const [status, setStatus] = useState<ChangeStatus>(initial?.status || 'pending')
@@ -131,26 +151,30 @@ function ChangeForm({ initial, defaultTitle, onSave, onCancel }: { initial?: Cha
     }
 
     return (
-        <form onSubmit={submit} className="p-4 border-2 border-foreground bg-card space-y-3">
-            <input autoFocus placeholder="Change title" value={title} onChange={e => setTitle(e.target.value)} className={INPUT} />
-            <input placeholder="What needs to change?" value={description} onChange={e => setDescription(e.target.value)} className={INPUT} />
+        <form onSubmit={submit} className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+            <div className="space-y-2">
+                <Label htmlFor={`${uid}-title`}>Title</Label>
+                <Input id={`${uid}-title`} autoFocus placeholder="Change title" value={title} onChange={e => setTitle(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor={`${uid}-desc`}>Description</Label>
+                <Input id={`${uid}-desc`} placeholder="What needs to change?" value={description} onChange={e => setDescription(e.target.value)} />
+            </div>
             <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Status</label>
-                    <select value={status} onChange={e => setStatus(e.target.value as ChangeStatus)} className={INPUT}>
+                <div className="space-y-2">
+                    <Label htmlFor={`${uid}-status`}>Status</Label>
+                    <Select id={`${uid}-status`} value={status} onChange={e => setStatus(e.target.value as ChangeStatus)}>
                         <option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="done">Done</option>
-                    </select>
+                    </Select>
                 </div>
-                <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Extra Charge</label>
-                    <input type="number" min="0" step="any" value={amount} onChange={e => setAmount(e.target.value === '' ? '' : Number(e.target.value))} className={INPUT} />
+                <div className="space-y-2">
+                    <Label htmlFor={`${uid}-amount`}>Extra charge</Label>
+                    <Input id={`${uid}-amount`} type="number" min="0" step="any" value={amount} onChange={e => setAmount(e.target.value === '' ? '' : Number(e.target.value))} />
                 </div>
             </div>
             <div className="flex justify-end gap-2">
-                <button type="button" onClick={onCancel} className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"><X size={12} /> Cancel</button>
-                <button type="submit" disabled={saving || !title.trim()} className="flex items-center gap-1 px-4 py-1.5 border-2 border-foreground bg-foreground text-background text-[10px] font-black uppercase tracking-widest hover:bg-background hover:text-foreground transition-colors disabled:opacity-50">
-                    <Check size={12} /> {saving ? 'Saving' : 'Save'}
-                </button>
+                <Button type="button" variant="ghost" size="sm" onClick={onCancel}><X /> Cancel</Button>
+                <Button type="submit" size="sm" disabled={saving || !title.trim()}><Check /> {saving ? 'Saving' : 'Save'}</Button>
             </div>
         </form>
     )

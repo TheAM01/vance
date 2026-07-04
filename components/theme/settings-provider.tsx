@@ -26,7 +26,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [defaultView, setDefaultViewState] = useState<DefaultView>('weekly')
     const [strikethroughCompleted, setStrikethroughCompletedState] = useState(true)
-    const [glassyCards, setGlassyCardsState] = useState(true)
+    const [glassyCards, setGlassyCardsState] = useState(false)
     const [compactCards, setCompactCardsState] = useState(false)
     const [hoursPerDay, setHoursPerDayState] = useState(6)
     const [currencySymbol, setCurrencySymbolState] = useState('$')
