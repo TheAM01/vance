@@ -19,6 +19,7 @@ import {
   Target,
 } from '@/components/ui/icons'
 import { DashboardMock } from '@/components/landing/dashboard-mock'
+import { ShaderHero } from '@/components/landing/shader-hero'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type Kind = 'schedule' | 'projects' | 'analytics'
@@ -201,20 +202,28 @@ export default function LandingPage() {
       </nav>
 
       {/* ── HERO ────────────────────────────────────────────────────────── */}
-      <section ref={heroRef} className="relative flex h-screen min-h-[560px] flex-col items-center justify-center px-6">
+      <section ref={heroRef} className="relative flex h-screen min-h-[560px] flex-col items-center justify-center overflow-hidden px-6">
+        {/* Animated "halo" shader background */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-[#0a1417]" />
+          <ShaderHero />
+          <div className="absolute inset-0 bg-black/10" />
+          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-b from-transparent to-background" />
+        </div>
+
         <motion.div
           style={isMobile ? {} : { y: heroY, opacity: heroOpacity }}
           className="relative z-10 flex w-full flex-col items-center text-center"
         >
-          <h1 className="font-heading font-bold leading-none tracking-tighter text-foreground text-[clamp(4.5rem,20vw,17rem)]">
+          <h1 className="font-heading font-bold leading-none tracking-tighter text-white text-[clamp(4.5rem,20vw,17rem)] [text-shadow:0_4px_60px_rgba(0,0,0,0.45)]">
             VANCE<span className="text-highlight">.</span>
           </h1>
-          <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg">
             Manage every client project, let your tasks schedule themselves, and keep revenue, time and change requests in view — all in one calm, professional workspace built for high-volume freelancers.
           </p>
           <Link
             href={launchHref}
-            className="group mt-9 inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+            className="group mt-9 inline-flex items-center gap-2 rounded-lg bg-highlight px-8 py-3.5 text-sm font-semibold text-highlight-foreground shadow-elevated transition-transform hover:-translate-y-0.5"
           >
             {isLoggedIn ? 'Initialize' : 'Get started'}
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
