@@ -12,6 +12,7 @@ import {
     PanelLeftClose,
     PanelLeftOpen,
     Settings,
+    Home,
 } from '@/components/ui/icons'
 
 import { ThemeToggle } from '@/components/theme/theme-toggle'
@@ -100,41 +101,33 @@ export function Sidebar({ isOpen: isMobileOpen, onToggle }: SidebarProps) {
                     isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 )}
             >
-                {/* Brand + collapse */}
+                {/* Brand + expand/collapse toggle — always lives in the header */}
                 <div
                     className={cn(
-                        'flex h-16 items-center border-b border-sidebar-border px-4',
-                        expanded ? 'justify-between' : 'justify-center'
+                        'flex h-16 shrink-0 border-b border-sidebar-border px-4',
+                        expanded
+                            ? 'items-center justify-between'
+                            : 'flex-col items-center justify-center gap-1'
                     )}
                 >
-                    <Brand collapsed={!expanded} />
+                    <Brand collapsed={!expanded} className="text-sidebar-accent-foreground" />
                     <button
                         onClick={() => setExpanded((v) => !v)}
-                        className={cn(
-                            'hidden rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground md:inline-flex',
-                            !expanded && 'md:hidden'
-                        )}
-                        aria-label="Collapse sidebar"
+                        className="hidden rounded-md p-1.5 text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground md:inline-flex"
+                        aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
                     >
-                        <PanelLeftClose className="size-[18px]" />
+                        {expanded ? (
+                            <PanelLeftClose className="size-[18px]" />
+                        ) : (
+                            <PanelLeftOpen className="size-[18px]" />
+                        )}
                     </button>
                 </div>
-
-                {/* Expand button when collapsed */}
-                {!expanded && (
-                    <button
-                        onClick={() => setExpanded(true)}
-                        className="mx-auto mt-3 hidden rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground md:inline-flex"
-                        aria-label="Expand sidebar"
-                    >
-                        <PanelLeftOpen className="size-[18px]" />
-                    </button>
-                )}
 
                 {/* Navigation */}
                 <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
                     {expanded && (
-                        <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                        <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/60">
                             Workspace
                         </p>
                     )}
@@ -159,20 +152,33 @@ export function Sidebar({ isOpen: isMobileOpen, onToggle }: SidebarProps) {
                 </nav>
 
                 {/* Footer */}
-                <div className="border-t border-sidebar-border p-3">
+                <div className="flex flex-col gap-1 border-t border-sidebar-border p-3">
+                    <Link
+                        href="/"
+                        onClick={onToggle}
+                        title={!expanded ? 'Exit to home' : undefined}
+                        className={cn(
+                            'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                            !expanded && 'justify-center px-2'
+                        )}
+                    >
+                        <Home className="size-[18px] shrink-0" />
+                        {expanded && <span>Exit to home</span>}
+                    </Link>
+
                     <div className={cn('flex items-center gap-2', expanded ? 'justify-between' : 'flex-col')}>
                         <button
                             onClick={handleLogout}
                             title={!expanded ? 'Sign out' : undefined}
                             className={cn(
-                                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-destructive/10 hover:text-destructive',
+                                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-destructive/15 hover:text-destructive',
                                 !expanded && 'justify-center px-2'
                             )}
                         >
                             <LogOut className="size-[18px] shrink-0" />
                             {expanded && <span>Sign out</span>}
                         </button>
-                        <ThemeToggle />
+                        <ThemeToggle className="border-sidebar-border bg-sidebar-accent/40 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
                     </div>
                 </div>
             </aside>

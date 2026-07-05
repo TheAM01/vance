@@ -55,17 +55,18 @@
 
     --radius: 0.625rem;
 
-    /* Real, dark-based elevation (no washed-out halos). */
-    --shadow-color: 220 45% 13%;
+    /* Near-black elevation — a defined dark shadow, never a light halo. */
+    --shadow-color: 220 32% 5%;
 
-    --sidebar-background: 20 9% 97%;
-    --sidebar-foreground: 218 12% 32%;
-    --sidebar-primary: 183 49% 25%;
-    --sidebar-primary-foreground: 40 30% 98%;
-    --sidebar-accent: 183 26% 92%;
-    --sidebar-accent-foreground: 183 49% 22%;
-    --sidebar-border: 20 9% 89%;
-    --sidebar-ring: 183 49% 30%;
+    /* Teal-green sidebar with amber (orange) accents. */
+    --sidebar-background: 183 47% 24%;
+    --sidebar-foreground: 180 24% 82%;
+    --sidebar-primary: 34 96% 55%;
+    --sidebar-primary-foreground: 195 45% 12%;
+    --sidebar-accent: 183 42% 30%;
+    --sidebar-accent-foreground: 40 40% 97%;
+    --sidebar-border: 183 38% 19%;
+    --sidebar-ring: 34 96% 55%;
   }
 
   .dark {
@@ -116,14 +117,15 @@
     /* Pure-black elevation so shadows actually read on dark surfaces. */
     --shadow-color: 200 65% 2%;
 
-    --sidebar-background: 200 26% 9%;
-    --sidebar-foreground: 200 12% 70%;
-    --sidebar-primary: 183 58% 50%;
+    /* Darker teal sidebar with amber (orange) accents. */
+    --sidebar-background: 188 50% 8%;
+    --sidebar-foreground: 183 16% 66%;
+    --sidebar-primary: 34 100% 58%;
     --sidebar-primary-foreground: 195 45% 8%;
-    --sidebar-accent: 188 42% 18%;
-    --sidebar-accent-foreground: 183 60% 76%;
-    --sidebar-border: 200 15% 17%;
-    --sidebar-ring: 183 64% 52%;
+    --sidebar-accent: 188 46% 15%;
+    --sidebar-accent-foreground: 40 32% 93%;
+    --sidebar-border: 188 42% 14%;
+    --sidebar-ring: 34 100% 58%;
   }
 }
 

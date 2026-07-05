@@ -10,7 +10,7 @@ interface GlobalHeaderProps {
 
 export function GlobalHeader({ isOpen, onToggle }: GlobalHeaderProps) {
     return (
-        <header className="fixed left-0 right-0 top-0 z-[100] flex h-14 items-center justify-between border-b border-border bg-background/85 px-4 backdrop-blur md:hidden">
+        <header className="fixed left-0 right-0 top-0 z-[100] flex h-16 items-center justify-between border-b border-border bg-background/85 px-4 backdrop-blur md:hidden">
             <div className="flex items-center gap-3">
                 <button
                     onClick={onToggle}

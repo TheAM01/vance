@@ -24,6 +24,7 @@ import {
   ArrowTopRightOnSquareIcon,
   FlagIcon,
   FolderIcon,
+  HomeIcon,
   ChartPieIcon,
   CodeBracketIcon,
   ArrowPathIcon,
@@ -96,6 +97,7 @@ export const FolderKanban = icon(FolderIcon)
 export const Gauge = icon(ChartPieIcon)
 export const Github = icon(CodeBracketIcon)
 export const GitPullRequestArrow = icon(ArrowPathIcon)
+export const Home = icon(HomeIcon)
 export const Hourglass = icon(ClockIcon)
 export const Layers = icon(Square3Stack3DIcon)
 export const LayoutDashboard = icon(Squares2X2Icon)
