@@ -5,6 +5,7 @@ import { MoreVertical, Trash2 } from '@/components/ui/icons'
 import Link from 'next/link'
 import { Project, ProjectStatus } from '@/lib/types'
 import { formatMoney } from '@/lib/format'
+import { useSettings } from '@/components/theme/settings-provider'
 import { cn } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -25,6 +26,7 @@ const STATUS_VARIANT: Record<ProjectStatus, 'primary' | 'warning' | 'success' | 
 }
 
 export function ProjectCard({ project, onChange }: { project: Project; onChange?: () => void }) {
+    const { currencySymbol } = useSettings()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
 
@@ -107,7 +109,7 @@ export function ProjectCard({ project, onChange }: { project: Project; onChange?
 
                     {/* Amount */}
                     <div className="font-heading text-lg font-semibold tabular-nums text-foreground">
-                        {formatMoney(project.amount, project.currency)}
+                        {formatMoney(project.amount, currencySymbol)}
                     </div>
 
                     {/* Progress */}

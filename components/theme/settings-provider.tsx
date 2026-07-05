@@ -3,9 +3,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
 export type ViewMode = 'list' | 'board'
-export type DefaultView = 'daily' | 'weekly'
+export type DefaultView = 'daily' | 'weekly' | 'list'
 
 interface SettingsContextType {
+    /** True once preferences have been read from localStorage (client-only). */
+    hydrated: boolean
     defaultView: DefaultView
     setDefaultView: (view: DefaultView) => void
     strikethroughCompleted: boolean
@@ -30,6 +32,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [compactCards, setCompactCardsState] = useState(false)
     const [hoursPerDay, setHoursPerDayState] = useState(6)
     const [currencySymbol, setCurrencySymbolState] = useState('$')
+    const [hydrated, setHydrated] = useState(false)
 
     useEffect(() => {
         const dv = localStorage.getItem('vance_default_view') as DefaultView
@@ -49,6 +52,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
         const cur = localStorage.getItem('vance_currency_symbol')
         if (cur !== null) setCurrencySymbolState(cur)
+
+        setHydrated(true)
     }, [])
 
     const setDefaultView = (view: DefaultView) => {
@@ -79,6 +84,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <SettingsContext.Provider value={{
+            hydrated,
             defaultView, setDefaultView,
             strikethroughCompleted, setStrikethroughCompleted,
             glassyCards, setGlassyCards,

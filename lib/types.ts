@@ -42,6 +42,34 @@ export interface Change {
   order: number
 }
 
+/**
+ * A person in the freelancer's world — a client, lead, collaborator, whoever.
+ * Lives in its own `contacts` collection. `projectIds` softly associates the
+ * contact with projects (the project documents are never modified).
+ */
+export interface Contact {
+  _id: string
+  name: string
+  email?: string
+  phone?: string
+  company?: string
+  /** Their title / role at the company. */
+  role?: string
+  location?: string
+  linkedin?: string
+  website?: string
+  /** How you acquired / met them — Referral, Upwork, Direct, etc. (free text). */
+  source?: string
+  /** Preset (Great/Good/Neutral/Difficult/Bad) or any custom label. */
+  relationship?: string
+  description?: string
+  color: string
+  /** _ids of associated projects. */
+  projectIds: string[]
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface Project {
   _id: string
   name: string

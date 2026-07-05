@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { DM_Sans } from 'next/font/google'
+import { DM_Sans, Space_Grotesk } from 'next/font/google'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import './globals.css'
@@ -10,6 +10,12 @@ import LayoutClient from './layout-client'
 const fontDmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-dm-sans',
+  display: 'swap',
+})
+
+const fontSpaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
   display: 'swap',
 })
 
@@ -32,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fontDmSans.variable} ${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
+        className={`${fontDmSans.variable} ${fontSpaceGrotesk.variable} ${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"

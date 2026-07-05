@@ -6,6 +6,7 @@ import { Check, Flag, Clock, CalendarClock, AlertTriangle } from '@/components/u
 import { ScheduledTask } from '@/lib/scheduler'
 import { parseDateLocal } from '@/lib/date-utils'
 import { Badge } from '@/components/ui/badge'
+import { useSettings } from '@/components/theme/settings-provider'
 import { cn } from '@/lib/utils'
 
 const PRIORITY_VARIANT: Record<string, 'destructive' | 'warning' | 'outline'> = {
@@ -26,6 +27,7 @@ export function ScheduleTaskCard({
     showDescription?: boolean
 }) {
     const [busy, setBusy] = useState(false)
+    const { strikethroughCompleted } = useSettings()
     const { task, projectColor, projectName, projectId, overdue, atRisk, done } = item
     const hours = Math.max(0.5, task.estimatedHours || 1)
 
@@ -51,7 +53,8 @@ export function ScheduleTaskCard({
                             className={cn(
                                 compact ? 'text-[13px]' : 'text-sm',
                                 'font-medium leading-snug',
-                                done ? 'text-muted-foreground line-through' : 'text-foreground'
+                                done ? 'text-muted-foreground' : 'text-foreground',
+                                done && strikethroughCompleted && 'line-through'
                             )}
                         >
                             {task.title}

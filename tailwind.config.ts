@@ -18,6 +18,7 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-geist-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         heading: ['var(--font-dm-sans)', 'var(--font-geist-sans)', 'ui-sans-serif', 'sans-serif'],
+        grotesk: ['var(--font-space-grotesk)', 'var(--font-geist-sans)', 'ui-sans-serif', 'sans-serif'],
         mono: ['var(--font-geist-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       colors: {
@@ -91,11 +92,11 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       boxShadow: {
-        xs: '0 1px 2px 0 hsl(var(--shadow-color) / 0.10)',
-        sm: '0 1px 2px -1px hsl(var(--shadow-color) / 0.16), 0 2px 4px -1px hsl(var(--shadow-color) / 0.10)',
-        card: '0 1px 3px 0 hsl(var(--shadow-color) / 0.10), 0 5px 14px -4px hsl(var(--shadow-color) / 0.14)',
-        elevated: '0 6px 16px -4px hsl(var(--shadow-color) / 0.22), 0 12px 30px -8px hsl(var(--shadow-color) / 0.18)',
-        popover: '0 12px 36px -8px hsl(var(--shadow-color) / 0.30), 0 6px 16px -4px hsl(var(--shadow-color) / 0.22)',
+        xs: 'var(--shadow-xs)',
+        sm: 'var(--shadow-sm)',
+        card: 'var(--shadow-card)',
+        elevated: 'var(--shadow-elevated)',
+        popover: 'var(--shadow-popover)',
       },
       keyframes: {
         'accordion-down': {

@@ -22,6 +22,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { TaskSection } from '@/components/project/task-section'
 import { ChangeSection } from '@/components/project/change-section'
 import { ProjectFormModal, ProjectFormValues, STATUSES } from '@/components/projects/project-form-modal'
+import { useSettings } from '@/components/theme/settings-provider'
 
 const STATUS_VARIANT: Record<ProjectStatus, 'primary' | 'warning' | 'success' | 'outline'> = {
     active: 'primary',
@@ -52,6 +53,7 @@ export default function ProjectDetailPage() {
     const id = params.id as string
     const router = useRouter()
     const { data: project, error, mutate } = useSWR<Project>(`/api/projects/${id}`, fetcher)
+    const { currencySymbol } = useSettings()
     const [editing, setEditing] = useState(false)
 
     if (error) {
@@ -196,18 +198,18 @@ export default function ProjectDetailPage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <div className="font-heading text-3xl font-semibold tabular-nums text-foreground">{formatMoney(total, project.currency)}</div>
+                                <div className="font-heading text-3xl font-semibold tabular-nums text-foreground">{formatMoney(total, currencySymbol)}</div>
                                 <div className="mt-1 text-sm text-muted-foreground">Total including changes</div>
                             </div>
                             <Separator />
                             <dl className="space-y-2.5 text-sm">
                                 <div className="flex items-center justify-between">
                                     <dt className="text-muted-foreground">Base</dt>
-                                    <dd className="tabular-nums text-foreground">{formatMoney(project.amount, project.currency)}</dd>
+                                    <dd className="tabular-nums text-foreground">{formatMoney(project.amount, currencySymbol)}</dd>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <dt className="text-muted-foreground">Changes</dt>
-                                    <dd className="tabular-nums text-foreground">+{formatMoney(changesExtra, project.currency)}</dd>
+                                    <dd className="tabular-nums text-foreground">+{formatMoney(changesExtra, currencySymbol)}</dd>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <dt className="text-muted-foreground">Payment</dt>
@@ -235,7 +237,7 @@ export default function ProjectDetailPage() {
                 {/* Tasks + Changes */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <TaskSection projectId={id} tasks={project.tasks || []} onChange={mutate} />
-                    <ChangeSection projectId={id} changes={project.changes || []} currency={project.currency} onChange={mutate} />
+                    <ChangeSection projectId={id} changes={project.changes || []} currency={currencySymbol} onChange={mutate} />
                 </div>
             </PageBody>
 

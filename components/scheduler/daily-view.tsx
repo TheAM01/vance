@@ -26,7 +26,7 @@ export function DailyView({
     const pct = Math.min(100, (hours / hoursPerDay) * 100)
 
     return (
-        <div className="max-w-2xl space-y-4">
+        <div className="mx-auto max-w-2xl space-y-4">
             {/* Capacity summary */}
             <Card className="p-4">
                 <div className="mb-2 flex items-center justify-between gap-3">

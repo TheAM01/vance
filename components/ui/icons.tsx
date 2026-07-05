@@ -25,6 +25,12 @@ import {
   FlagIcon,
   FolderIcon,
   HomeIcon,
+  UsersIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  MapPinIcon,
+  GlobeAltIcon,
+  BriefcaseIcon,
   ChartPieIcon,
   CodeBracketIcon,
   ArrowPathIcon,
@@ -98,6 +104,12 @@ export const Gauge = icon(ChartPieIcon)
 export const Github = icon(CodeBracketIcon)
 export const GitPullRequestArrow = icon(ArrowPathIcon)
 export const Home = icon(HomeIcon)
+export const Users = icon(UsersIcon)
+export const Mail = icon(EnvelopeIcon)
+export const Phone = icon(PhoneIcon)
+export const MapPin = icon(MapPinIcon)
+export const Globe = icon(GlobeAltIcon)
+export const Briefcase = icon(BriefcaseIcon)
 export const Hourglass = icon(ClockIcon)
 export const Layers = icon(Square3Stack3DIcon)
 export const LayoutDashboard = icon(Squares2X2Icon)

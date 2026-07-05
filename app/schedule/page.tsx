@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
 import {
@@ -42,13 +42,22 @@ type View = 'week' | 'day' | 'list'
 
 export default function SchedulePage() {
     const { data: projects, mutate } = useSWR<Project[]>('/api/projects', fetcher)
-    const { hoursPerDay, setHoursPerDay, compactCards, setCompactCards } = useSettings()
+    const { hoursPerDay, setHoursPerDay, compactCards, setCompactCards, defaultView, hydrated } = useSettings()
 
     const [view, setView] = useState<View>('week')
     const [cursor, setCursor] = useState<Date>(() => startOfDay(new Date()))
     const [panelOpen, setPanelOpen] = useState(false)
     const [hidden, setHidden] = useState<string[]>([])
     const [showCompleted, setShowCompleted] = useState(true)
+
+    // Apply the user's default view once preferences have hydrated (only until
+    // they pick a view manually this session).
+    const viewInited = useRef(false)
+    useEffect(() => {
+        if (viewInited.current || !hydrated) return
+        viewInited.current = true
+        setView(defaultView === 'daily' ? 'day' : defaultView === 'list' ? 'list' : 'week')
+    }, [hydrated, defaultView])
 
     // Load persisted view prefs
     useEffect(() => {
@@ -123,7 +132,7 @@ export default function SchedulePage() {
                     {VIEWS.map(({ v, label, icon: Icon }) => (
                         <button
                             key={v}
-                            onClick={() => setView(v)}
+                            onClick={() => { viewInited.current = true; setView(v) }}
                             className={cn(
                                 'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors',
                                 view === v ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
@@ -141,7 +150,7 @@ export default function SchedulePage() {
 
             <PageBody width="wide" className="space-y-5">
                 {/* Control bar */}
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex min-h-9 items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                         {view !== 'list' ? (
                             <>
@@ -200,7 +209,7 @@ export default function SchedulePage() {
                 ) : view === 'day' ? (
                     <DailyView items={grouped.get(dayKey) || []} hoursPerDay={hoursPerDay} onToggle={toggle} compact={compactCards} />
                 ) : (
-                    <div className="max-w-2xl space-y-6">
+                    <div className="mx-auto max-w-2xl space-y-6">
                         {[...grouped.entries()].length === 0 ? (
                             <EmptyState
                                 icon={LayoutList}

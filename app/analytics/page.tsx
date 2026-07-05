@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { fetcher } from '@/lib/swr-fetcher'
 import { Project } from '@/lib/types'
 import { formatMoney } from '@/lib/format'
+import { useSettings } from '@/components/theme/settings-provider'
 import {
     Loader2, DollarSign, FolderKanban, CheckCircle2, Clock, AlertTriangle,
     Layers, GitPullRequestArrow, Wallet, Hourglass, Radio, Building2, BarChart3,
@@ -63,6 +64,7 @@ function SectionHeader({ title }: { title: string }) {
 
 export default function AnalyticsPage() {
     const { data: projects, error } = useSWR<Project[]>('/api/projects', fetcher)
+    const { currencySymbol } = useSettings()
 
     if (error) {
         return (
@@ -89,7 +91,7 @@ export default function AnalyticsPage() {
         )
     }
 
-    const currency = projects[0]?.currency || '$'
+    const currency = currencySymbol
     const money = (n: number) => formatMoney(Math.round(n), currency)
 
     const projectValue = (p: Project) => (Number(p.amount) || 0) + (p.changes || []).reduce((a, c) => a + (Number(c.amount) || 0), 0)

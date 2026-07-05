@@ -13,6 +13,7 @@ import {
     PanelLeftOpen,
     Settings,
     Home,
+    Users,
 } from '@/components/ui/icons'
 
 import { ThemeToggle } from '@/components/theme/theme-toggle'
@@ -34,6 +35,7 @@ const NAV: NavItem[] = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/app' },
     { label: 'Schedule', icon: CalendarRange, href: '/schedule' },
     { label: 'Projects', icon: FolderKanban, href: '/projects' },
+    { label: 'Contacts', icon: Users, href: '/contacts' },
     { label: 'Analytics', icon: BarChart3, href: '/analytics' },
 ]
 
@@ -101,19 +103,21 @@ export function Sidebar({ isOpen: isMobileOpen, onToggle }: SidebarProps) {
                     isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 )}
             >
-                {/* Brand + expand/collapse toggle — always lives in the header */}
+                {/* Brand + expand/collapse toggle */}
                 <div
                     className={cn(
-                        'flex h-16 shrink-0 border-b border-sidebar-border px-4',
-                        expanded
-                            ? 'items-center justify-between'
-                            : 'flex-col items-center justify-center gap-1'
+                        'flex h-16 shrink-0 items-center border-b border-sidebar-border',
+                        expanded ? 'justify-between px-4' : 'justify-center px-2'
                     )}
                 >
-                    <Brand collapsed={!expanded} className="text-sidebar-accent-foreground" />
+                    {/* Wordmark — hidden on desktop when collapsed so the toggle owns the header */}
+                    <Brand className={cn('text-sidebar-accent-foreground', !expanded && 'md:hidden')} />
                     <button
                         onClick={() => setExpanded((v) => !v)}
-                        className="hidden rounded-md p-1.5 text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground md:inline-flex"
+                        className={cn(
+                            'hidden items-center justify-center rounded-md text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground md:inline-flex',
+                            expanded ? 'p-1.5' : 'h-full w-full'
+                        )}
                         aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
                     >
                         {expanded ? (

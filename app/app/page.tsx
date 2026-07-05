@@ -49,7 +49,7 @@ function Metric({ label, value, icon: Icon, tone, sub }: { label: string; value:
 
 export default function DashboardPage() {
     const { data: projects } = useSWR<Project[]>('/api/projects', fetcher)
-    const { hoursPerDay } = useSettings()
+    const { hoursPerDay, currencySymbol } = useSettings()
 
     if (!projects) {
         return (
@@ -75,7 +75,7 @@ export default function DashboardPage() {
         .filter(p => !p.paid && p.status !== 'cancelled')
         .reduce((s, p) => s + (Number(p.amount) || 0) + (p.changes || []).reduce((a, c) => a + (Number(c.amount) || 0), 0), 0)
 
-    const currency = projects[0]?.currency || '$'
+    const currency = currencySymbol
 
     const scheduled = buildSchedule(projects, { hoursPerDay })
     const todays = scheduled.filter(s => s.date === todayStr && !s.done)

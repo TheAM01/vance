@@ -55,8 +55,16 @@
 
     --radius: 0.625rem;
 
-    /* Near-black elevation — a defined dark shadow, never a light halo. */
-    --shadow-color: 220 32% 5%;
+    /* Near-black elevation — a defined dark shadow, never a light halo.
+       The full shadow strings live here (not in tailwind.config) because the
+       browser resolves hsl(var(--shadow-color)/α) correctly, whereas Tailwind's
+       build-time shadow parser mangles a var()+slash-alpha color into white. */
+    --shadow-color: 220 40% 3%;
+    --shadow-xs: 0 1px 2px 0 hsl(var(--shadow-color) / 0.16);
+    --shadow-sm: 0 1px 2px -1px hsl(var(--shadow-color) / 0.24), 0 2px 5px -1px hsl(var(--shadow-color) / 0.16);
+    --shadow-card: 0 1px 3px 0 hsl(var(--shadow-color) / 0.20), 0 6px 16px -6px hsl(var(--shadow-color) / 0.24);
+    --shadow-elevated: 0 6px 18px -6px hsl(var(--shadow-color) / 0.32), 0 14px 34px -10px hsl(var(--shadow-color) / 0.28);
+    --shadow-popover: 0 16px 42px -10px hsl(var(--shadow-color) / 0.40), 0 8px 20px -6px hsl(var(--shadow-color) / 0.30);
 
     /* Teal-green sidebar with amber (orange) accents. */
     --sidebar-background: 183 47% 24%;

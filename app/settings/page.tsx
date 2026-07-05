@@ -66,14 +66,15 @@ export default function SettingsPage() {
                                 className="w-24 text-center"
                             />
                         </Row>
-                        <Row label="Default schedule view" desc="Daily or weekly grouping.">
+                        <Row label="Default schedule view" desc="Which view the Schedule opens in.">
                             <Select
                                 value={s.defaultView}
                                 onChange={(e) => s.setDefaultView(e.target.value as any)}
                                 wrapperClassName="w-36"
                             >
-                                <option value="daily">Daily</option>
                                 <option value="weekly">Weekly</option>
+                                <option value="daily">Daily</option>
+                                <option value="list">List</option>
                             </Select>
                         </Row>
                     </CardContent>
